@@ -101,7 +101,7 @@ function setup() {
 
 let prev;
 function draw() {
-   const start = millis();
+   performance.mark('testStart');
 
    prev = Uint8ClampedArray.from(pixels);
    Camera.render(pixels);
@@ -124,9 +124,9 @@ function draw() {
 
    updatePixels();
 
-   let end = millis();
-   const elapsed = end - start;
-   console.warn('This took: ' + elapsed.toFixed(2) + 'ms.');
+   performance.mark('testEnd');
+   performance.measure('runTest', 'testStart', 'testEnd');
+   console.warn('Generation took: ' + performance.getEntriesByName('runTest')[0].duration.toFixed(2) + 'ms');
 
    cycles++;
    if (cycles >= RENDER_CYCLES) {

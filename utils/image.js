@@ -1,4 +1,5 @@
 import { Interval } from 'utils/math.js';
+import { vec3 } from 'utils/vector.js';
 
 function getPixelIndex(x, y, w) {
    return (y * w + x) * 4;
@@ -9,7 +10,7 @@ function averageColorComponent(a, b) {
 }
 
 function averageColors(color1, color2) {
-   return createVector(
+   return vec3(
       averageColorComponent(color1.x, color2.x),
       averageColorComponent(color1.y, color2.y),
       averageColorComponent(color1.z, color2.z)

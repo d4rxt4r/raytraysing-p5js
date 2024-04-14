@@ -1,4 +1,6 @@
-const { add: add3, sub: sub3, mult: mul3, normalize: normalize3, dot: dot3 } = p5.Vector;
+import { vec3, Vector } from 'utils/vector.js';
+
+const { add, sub, mul, scale, normalize, dot } = Vector;
 
 export class Interval {
    constructor(min = -Infinity, max = Infinity) {
@@ -54,7 +56,7 @@ function randomDouble(min, max) {
 }
 
 function randomVec(min, max) {
-   return createVector(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
+   return vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
 }
 
 function randomInUnitSphere() {
@@ -67,26 +69,26 @@ function randomInUnitSphere() {
 }
 
 function randomUnitVector() {
-   return normalize3(randomInUnitSphere());
+   return normalize(randomInUnitSphere());
 }
 
 function randomOnHemisphere(normal) {
    const onUnitSphere = randomUnitVector();
-   if (dot3(onUnitSphere, normal) > 0) {
+   if (dot(onUnitSphere, normal) > 0) {
       return onUnitSphere;
    }
-   return mul3(onUnitSphere, -1);
+   return mul(onUnitSphere, -1);
 }
 
 function reflect(v, n) {
-   return sub3(v, mul3(n, 2 * dot3(v, n)));
+   return sub(v, scale(n, 2 * dot(v, n)));
 }
 
 function refract(uv, n, etai_over_etat) {
-   const cos_theta = Math.min(dot3(mul3(uv, -1), n), 1);
-   const r_out_perp = mul3(add3(uv, mul3(n, cos_theta)), etai_over_etat);
-   const r_out_parallel = mul3(n, -Math.sqrt(Math.abs(1.0 - r_out_perp.magSq())));
-   return add3(r_out_perp, r_out_parallel);
+   const cos_theta = Math.min(dot(scale(uv, -1), n), 1);
+   const r_out_perp = scale(add(uv, scale(n, cos_theta)), etai_over_etat);
+   const r_out_parallel = scale(n, -Math.sqrt(Math.abs(1.0 - r_out_perp.magSq())));
+   return add(r_out_perp, r_out_parallel);
 }
 
 export {

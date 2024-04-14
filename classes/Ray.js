@@ -1,4 +1,6 @@
-const { add: add3, mult: mul3 } = p5.Vector;
+import { Vector } from 'utils/vector.js';
+
+const { add, scale } = Vector;
 
 export default class Ray {
    constructor(origin, direction) {
@@ -15,6 +17,6 @@ export default class Ray {
    }
 
    at(t) {
-      return add3(this._origin, mul3(this._direction, t));
+      return add(this._origin, scale(this._direction, t));
    }
 }

@@ -1,6 +1,7 @@
+import { vec3, Vector } from 'utils/vector.js';
 import { Lambertian } from 'classes/Material.js';
 
-const { sub: sub3, div: div3, dot: dot3 } = p5.Vector;
+const { sub, scale, dot } = Vector;
 
 export class Hittable {
    hit(ray, rayT, hitRec) {
@@ -13,13 +14,13 @@ class Sphere extends Hittable {
       super();
       this.center = center;
       this.radius = radius || 0;
-      this.mat = mat || new Lambertian(createVector(1, 1, 1));
+      this.mat = mat || new Lambertian(vec3(1, 1, 1));
    }
 
    hit(ray, rayT, hitRec) {
-      const oc = sub3(this.center, ray.origin);
+      const oc = sub(this.center, ray.origin);
       const a = ray.direction.magSq();
-      const h = dot3(ray.direction, oc);
+      const h = dot(ray.direction, oc);
       const c = oc.magSq() - this.radius * this.radius;
 
       const discriminant = h * h - a * c;
@@ -39,7 +40,7 @@ class Sphere extends Hittable {
 
       hitRec.t = root;
       hitRec.p = ray.at(hitRec.t);
-      const outward_normal = div3(sub3(hitRec.p, this.center), this.radius);
+      const outward_normal = scale(sub(hitRec.p, this.center), 1 / this.radius);
       hitRec.setFaceNormal(ray, outward_normal);
       hitRec.mat = this.mat;
 

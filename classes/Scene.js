@@ -1,6 +1,7 @@
 import { Interval } from 'utils/math.js';
+import { Vector } from 'utils/vector.js';
 
-const { mult: mul3, dot: dot3 } = p5.Vector;
+const { scale, dot } = Vector;
 
 export class HitRecord {
    constructor({ point, normal, t } = {}) {
@@ -11,8 +12,8 @@ export class HitRecord {
    }
 
    setFaceNormal(ray, outward_normal) {
-      this.frontFace = dot3(ray.direction, outward_normal) < 0;
-      this.normal = this.frontFace ? outward_normal : mul3(outward_normal, -1);
+      this.frontFace = dot(ray.direction, outward_normal) < 0;
+      this.normal = this.frontFace ? outward_normal : scale(outward_normal, -1);
    }
 }
 

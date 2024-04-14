@@ -1,4 +1,4 @@
-import { reflect, nearZero, randomUnitVector, refract, randomDouble } from 'utils/math.js';
+import { reflect, nearZero, randomUnitVector, refract } from 'utils/math.js';
 import { vec3, Vector } from 'utils/vector.js';
 import Ray from 'classes/Ray.js';
 
@@ -73,7 +73,7 @@ class Dielectric extends Material {
 
       const cannot_refract = ri * sin_theta > 1;
       let direction;
-      if (cannot_refract || this.reflectance(cos_theta, ri) > randomDouble()) {
+      if (cannot_refract || this.reflectance(cos_theta, ri) > Math.random()) {
          direction = reflect(unitDirection, hitRec.normal);
       } else {
          direction = refract(unitDirection, hitRec.normal, ri);

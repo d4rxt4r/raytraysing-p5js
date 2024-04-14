@@ -56,6 +56,10 @@ function randomDouble(min, max) {
 }
 
 function randomVec(min, max) {
+   if (!min || !max) {
+      return vec3(Math.random(), Math.random(), Math.random());
+   }
+
    return vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
 }
 

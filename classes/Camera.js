@@ -1,5 +1,5 @@
 import { getPixelIndex, setImagePixel } from 'utils/image.js';
-import { Interval, deg2rad, randomDouble } from 'utils/math.js';
+import { Interval, deg2rad } from 'utils/math.js';
 import { vec3, Vector } from 'utils/vector.js';
 import { HitRecord } from 'classes/Scene.js';
 import Ray from 'classes/Ray.js';
@@ -52,7 +52,7 @@ export class Camera {
    }
 
    sampleSquare() {
-      return vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+      return vec3(Math.random() - 0.5, Math.random() - 0.5, 0);
    }
 
    getRay(i, j) {
@@ -97,8 +97,6 @@ export class Camera {
    }
 
    render(frameBuffer) {
-      this.init();
-
       let index;
       for (let j = 0; j < this.imageHeight; j++) {
          for (let i = 0; i < this.imageWidth; i++) {

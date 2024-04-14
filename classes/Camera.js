@@ -16,6 +16,7 @@ export class Camera {
       this.imageHeight = ih;
       this.scene = scene;
 
+      this.maxDepth = MAX_RAY_DEPTH;
       this.spp = SAMPLES_PER_PIXEL;
       this.vFov = 90;
       this.lookFrom = vec3(0, 0, 0);
@@ -104,7 +105,7 @@ export class Camera {
             let pixelColor = vec3(0, 0, 0);
             for (let sample = 0; sample < this.spp; sample++) {
                const ray = this.getRay(i, j);
-               pixelColor = add(pixelColor, this.getRayColor(ray, MAX_RAY_DEPTH));
+               pixelColor = add(pixelColor, this.getRayColor(ray, this.maxDepth));
             }
 
             setImagePixel(frameBuffer, i, j, this.imageWidth, scale(pixelColor, this.pixelSamplesScale));

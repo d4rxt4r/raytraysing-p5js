@@ -48,6 +48,7 @@ export class Camera {
          .sub(div3(viewportV, 2));
 
       this.pixel00Loc = add3(viewportUL).add(add3(this.pixelDeltaU, this.pixelDeltaV));
+      console.warn(this);
    }
 
    sampleSquare() {
@@ -108,7 +109,7 @@ export class Camera {
                pixelColor.add(this.getRayColor(ray, MAX_RAY_DEPTH));
             }
 
-            setImagePixel(frameBuffer.pixels, i, j, this.imageWidth, mul3(pixelColor, this.pixelSamplesScale));
+            setImagePixel(frameBuffer, i, j, this.imageWidth, mul3(pixelColor, this.pixelSamplesScale));
          }
       }
    }

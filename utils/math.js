@@ -48,7 +48,7 @@ function nearZero(vec) {
 }
 
 function randomDouble(min, max) {
-   if (!min || !max) {
+   if (min == null || max == null) {
       return Math.random();
    }
 
@@ -56,7 +56,7 @@ function randomDouble(min, max) {
 }
 
 function randomVec(min, max) {
-   if (!min || !max) {
+   if (min == null || max == null) {
       return vec3(Math.random(), Math.random(), Math.random());
    }
 

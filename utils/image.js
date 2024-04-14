@@ -1,4 +1,4 @@
-import { Interval } from 'utils/math.js';
+import { Interval, randomVec } from 'utils/math.js';
 import { vec3 } from 'utils/vector.js';
 
 function getPixelIndex(x, y, w) {
@@ -24,6 +24,12 @@ function linearToGamma(component) {
    return 0;
 }
 
+function randomColor(min, max) {
+   const randVec = randomVec(min, max);
+
+   return vec3(Math.abs(randVec.x), Math.abs(randVec.y), Math.abs(randVec.z));
+}
+
 function setImagePixel(imgPixels, x, y, w, color) {
    const index = getPixelIndex(x, y, w);
    const intensity = new Interval(0, 0.999);
@@ -38,4 +44,4 @@ function setImagePixel(imgPixels, x, y, w, color) {
    imgPixels[index + 3] = 255;
 }
 
-export { getPixelIndex, setImagePixel, averageColorComponent, averageColors };
+export { getPixelIndex, setImagePixel, averageColorComponent, averageColors, randomColor };

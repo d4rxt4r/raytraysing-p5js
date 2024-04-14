@@ -30,6 +30,14 @@ export default class AABB {
       return this.x;
    }
 
+   longestAxis() {
+      if (this.x.size > this.y.size) {
+         return this.x.size > this.z.size ? 0 : 2;
+      }
+
+      return this.y.size > this.z.size ? 1 : 2;
+   }
+
    hit(r, rayT) {
       const ray_orig = r.origin;
       const ray_dir = r.direction;

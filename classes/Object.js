@@ -6,6 +6,8 @@ import AABB from 'classes/AABB.js';
 
 const { add, sub, scale, dot } = Vector;
 
+const EMPTY_BBOX = new AABB(vec3(0, 0, 0), vec3(0, 0, 0));
+
 export class Hittable {
    hit(ray, rayT, hitRec) {
       throw new Error('Not implemented');
@@ -19,7 +21,13 @@ export class Hittable {
 export class BHVNode extends Hittable {
    constructor(objects, start, end) {
       super();
-      const axis = randomInt(0, 2);
+
+      this._boundingBox = EMPTY_BBOX;
+      for (let object_index = start; object_index < end; object_index++) {
+         this._boundingBox = new AABB(this._boundingBox, objects[object_index].boundingBox);
+      }
+
+      const axis = this._boundingBox.longestAxis();
       const object_span = end - start;
 
       if (object_span == 1) {
@@ -38,8 +46,6 @@ export class BHVNode extends Hittable {
          this.left = new BHVNode(objects, start, mid);
          this.right = new BHVNode(objects, mid, end);
       }
-
-      this._boundingBox = new AABB(this.left.boundingBox, this.right.boundingBox);
    }
 
    hit(ray, rayT, hitRec) {

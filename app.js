@@ -13,7 +13,7 @@ const I_WIDTH = 256;
 const I_HEIGHT = int(I_WIDTH / ASPECT_RATIO) < 1 ? 1 : int(I_WIDTH / ASPECT_RATIO);
 // const I_HEIGHT = 256;
 
-const RENDER_CYCLES = 5;
+const RENDER_CYCLES = 1;
 
 let Scene;
 let Camera;
@@ -31,8 +31,10 @@ function setupTestScene(scene, camera) {
 
    camera.lookFrom = vec3(0, 2, -6);
    camera.lookAt = vec3(0, 0, 0);
-   camera.spp = 20;
+   camera.spp = 50;
    camera.vFov = 25;
+   camera.defocusAngle = 2;
+   camera.focusDist = 5;
    camera.maxDepth = 15;
    camera.scene = world;
    camera.init();
@@ -71,15 +73,15 @@ function setupDemoScene(scene, camera) {
 
    const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 
-   camera.spp = 10;
+   camera.spp = 20;
    camera.maxDepth = 10;
    camera.scene = world;
    camera.vFov = 20;
    camera.lookFrom = vec3(13, 2, 3);
    camera.lookAt = vec3(0, 0, 0);
+   camera.defocusAngle = 0.6;
+   camera.focusDist = 10;
 
-   // camera.defocus_angle = 0.6;
-   // camera.focus_dist = 10.0;
    camera.init();
 
    return world;
@@ -93,8 +95,8 @@ function setup() {
    buffer.loadPixels();
 
    Camera = new PCamera(I_WIDTH, I_HEIGHT);
-   // Scene = setupTestScene(new HittableList(), Camera);
-   Scene = setupDemoScene(new HittableList(), Camera);
+   Scene = setupTestScene(new HittableList(), Camera);
+   // Scene = setupDemoScene(new HittableList(), Camera);
 }
 
 let prev;

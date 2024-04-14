@@ -1,13 +1,11 @@
 import { deg2rad } from 'utils/math.js';
 import { getPixelIndex, setImagePixel } from 'utils/image.js';
-import { vec3, Vector } from 'utils/vector.js';
+import { Vector, vec3, randVec3InNormDisk } from 'utils/vector.js';
 import Interval from 'classes/Interval.js';
 import Ray from 'classes/Ray.js';
 
 const { add, sub, mul, normalize, cross, scale, dot } = Vector;
 
-const MAX_RAY_DEPTH = 20;
-const SAMPLES_PER_PIXEL = 30;
 const DT = new Interval(0.001, Infinity);
 
 class HitRecord {
@@ -30,8 +28,10 @@ export default class Camera {
       this.imageHeight = ih;
       this.scene = null;
 
-      this.maxDepth = MAX_RAY_DEPTH;
-      this.spp = SAMPLES_PER_PIXEL;
+      this.maxDepth = 20;
+      this.spp = 30;
+      this.defocusAngle = 0;
+      this.focusDist = 1;
       this.vFov = 90;
       this.lookFrom = vec3(0, 0, 0);
       this.lookAt = vec3(0, 0, -1);
@@ -40,34 +40,43 @@ export default class Camera {
 
    init() {
       this.pixelSamplesScale = 1 / this.spp;
-      this.cameraCenter = this.lookFrom.copy();
+      this.center = this.lookFrom.copy();
 
       const focalLength = sub(this.lookFrom, this.lookAt).mag();
       const theta = deg2rad(this.vFov);
       const h = Math.tan(theta / 2);
 
-      this.vHeight = 2 * h * focalLength;
-      this.vWidth = this.vHeight * (this.imageWidth / this.imageHeight);
+      this.viewportHeight = 2 * h * focalLength;
+      this.viewportWidth = this.viewportHeight * (this.imageWidth / this.imageHeight);
 
       this.w = normalize(sub(this.lookFrom, this.lookAt));
       this.u = normalize(cross(this.vUp, this.w));
       this.v = cross(this.w, this.u);
 
-      const viewportU = scale(this.u, this.vWidth);
-      const viewportV = scale(scale(this.v, -1), this.vHeight);
+      const viewportU = scale(this.u, this.viewportWidth);
+      const viewportV = scale(scale(this.v, -1), this.viewportHeight);
 
       this.pixelDeltaU = scale(viewportU, 1 / this.imageWidth);
       this.pixelDeltaV = scale(viewportV, 1 / this.imageHeight);
 
-      const viewportUL = sub(this.cameraCenter, scale(this.w, focalLength))
+      const viewportUL = sub(this.center, scale(this.w, focalLength))
          .sub(scale(viewportU, 1 / 2))
          .sub(scale(viewportV, 1 / 2));
 
       this.pixel00Loc = viewportUL.add(add(this.pixelDeltaU, this.pixelDeltaV));
+
+      const defocusRadius = this.focusDist * Math.tan(deg2rad(this.defocusAngle / 2));
+      this._defocusDiskU = scale(this.u, defocusRadius);
+      this._defocusDiskV = scale(this.v, defocusRadius);
    }
 
    sampleSquare() {
       return vec3(Math.random() - 0.5, Math.random() - 0.5, 0);
+   }
+
+   defocusDiskSample() {
+      const p = randVec3InNormDisk();
+      return add(this.center, scale(this._defocusDiskU, p.x)).add(scale(this._defocusDiskV, p.y));
    }
 
    getRay(i, j) {
@@ -76,7 +85,8 @@ export default class Camera {
          add(this.pixel00Loc, scale(this.pixelDeltaU, i + offset.x)),
          scale(this.pixelDeltaV, j + offset.y)
       );
-      const rayOrigin = this.cameraCenter.copy();
+      const rayOrigin = this.defocusAngle <= 0 ? this.center.copy() : this.defocusDiskSample();
+      // const rayOrigin = this.cameraCenter.copy();
       const rayDirection = sub(pixelSample, rayOrigin);
 
       return new Ray(rayOrigin, rayDirection);

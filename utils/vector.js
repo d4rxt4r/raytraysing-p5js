@@ -176,6 +176,17 @@ function randVec3InUnitSphere() {
    }
 }
 
+function randVec3InNormDisk() {
+   while (true) {
+      const p = randVec3(-1, 1);
+      p.z = 0;
+
+      if (p.magSq() < 1) {
+         return p;
+      }
+   }
+}
+
 function randVec3OnHemisphere(normal) {
    const onUnitSphere = randomUnitVector();
    if (Vector.dot(onUnitSphere, normal) > 0) {
@@ -188,4 +199,4 @@ function randNormVec3() {
    return Vector.normalize(randVec3InUnitSphere());
 }
 
-export { Vector, vec3, randVec3, randNormVec3, randVec3OnHemisphere as randomOnHemisphere };
+export { Vector, vec3, randVec3, randNormVec3, randVec3OnHemisphere, randVec3InNormDisk };

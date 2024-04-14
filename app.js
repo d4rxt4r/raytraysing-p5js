@@ -102,6 +102,7 @@ function setup() {
 let prev;
 function draw() {
    performance.mark('testStart');
+   performance.mark('testStart');
 
    prev = Uint8ClampedArray.from(pixels);
    Camera.render(pixels);

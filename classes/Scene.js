@@ -1,29 +1,23 @@
-import { Interval } from 'utils/math.js';
-import { Vector } from 'utils/vector.js';
+import { vec3 } from 'utils/vector.js';
+import { Hittable } from 'classes/Object.js';
+import Interval from 'classes/Interval.js';
+import AABB from 'classes/AABB.js';
 
-const { scale, dot } = Vector;
+export class HittableList extends Hittable {
+   constructor(object) {
+      super();
 
-export class HitRecord {
-   constructor({ point, normal, t } = {}) {
-      this.p = point;
-      this.normal = normal;
-      this.t = t;
-      this.mat = null;
-   }
-
-   setFaceNormal(ray, outward_normal) {
-      this.frontFace = dot(ray.direction, outward_normal) < 0;
-      this.normal = this.frontFace ? outward_normal : scale(outward_normal, -1);
-   }
-}
-
-export class HittableList {
-   constructor() {
       this.objects = [];
+      this._boundingBox = new AABB(vec3(0, 0, 0), vec3(0, 0, 0));
+
+      if (object) {
+         this.add(object);
+      }
    }
 
    add(object) {
       this.objects.push(object);
+      this._boundingBox = new AABB(this.boundingBox, object.boundingBox);
    }
 
    clear() {
@@ -31,20 +25,12 @@ export class HittableList {
    }
 
    hit(ray, rayT, hitRec) {
-      const tempHRec = new HitRecord({});
-
       let hitAnything = false;
       let closestObj = rayT.max;
       this.objects.forEach((object) => {
-         if (object.hit(ray, new Interval(rayT.min, closestObj), tempHRec)) {
+         if (object.hit(ray, new Interval(rayT.min, closestObj), hitRec)) {
             hitAnything = true;
-            closestObj = tempHRec.t;
-
-            hitRec.p = tempHRec.p;
-            hitRec.normal = tempHRec.normal;
-            hitRec.t = tempHRec.t;
-            hitRec.mat = tempHRec.mat;
-            hitRec.frontFace = tempHRec.frontFace;
+            closestObj = hitRec.t;
          }
       });
 

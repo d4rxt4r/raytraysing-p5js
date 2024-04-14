@@ -2,9 +2,9 @@ import { int, randomDouble } from 'utils/math.js';
 import { vec3, Vector } from 'utils/vector.js';
 import { averageColorComponent, randomColor } from 'utils/image.js';
 import { HittableList } from 'classes/Scene.js';
-import { Camera as RCamera } from 'classes/Camera.js';
-import { Sphere } from 'classes/Object.js';
-import { Lambertian as FlatColor, Metal, Dielectric } from 'classes/Material.js';
+import { BHVNode, Sphere } from 'classes/Object.js';
+import { FlatColor, Metal, Dielectric } from 'classes/Material.js';
+import PCamera from 'classes/Camera.js';
 
 const { sub } = Vector;
 
@@ -13,24 +13,31 @@ const I_WIDTH = 256;
 const I_HEIGHT = int(I_WIDTH / ASPECT_RATIO) < 1 ? 1 : int(I_WIDTH / ASPECT_RATIO);
 // const I_HEIGHT = 256;
 
-const RENDER_CYCLES = 10;
+const RENDER_CYCLES = 5;
 
+let Scene;
 let Camera;
 let buffer;
 let cycles = 0;
 
 function setupTestScene(scene, camera) {
-   scene.add(new Sphere(vec3(0, -100.5, -1), 100, new FlatColor(vec3(0.8, 0.8, 0.0))));
-   scene.add(new Sphere(vec3(0, 0, -1.2), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.6)));
-   scene.add(new Sphere(vec3(-1, 0, -1), 0.5, new Dielectric(1.5)));
-   scene.add(new Sphere(vec3(-1, 0, -1), 0.4, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(1, 0, -1), 0.5, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(0, -50.5, 0), 50, new FlatColor(vec3(0.8, 0.8, 0.0))));
+   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.5)));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));
+   scene.add(new Sphere(vec3(-1.2, 0, 0.2), 0.5, new Metal(vec3(0.8, 0.8, 0.8))));
 
-   camera.lookFrom = vec3(-1.5, 2, 2);
-   camera.spp = 30;
+   const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+
+   camera.lookFrom = vec3(0, 2, -6);
+   camera.lookAt = vec3(0, 0, 0);
+   camera.spp = 20;
    camera.vFov = 25;
-   camera.maxDepth = 30;
+   camera.maxDepth = 15;
+   camera.scene = world;
    camera.init();
+
+   return world;
 }
 
 function setupDemoScene(scene, camera) {
@@ -62,9 +69,11 @@ function setupDemoScene(scene, camera) {
    scene.add(new Sphere(vec3(-4, 1, 0), 1.0, new FlatColor(vec3(0.4, 0.2, 0.1))));
    scene.add(new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5))));
 
+   const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+
    camera.spp = 10;
    camera.maxDepth = 10;
-
+   camera.scene = world;
    camera.vFov = 20;
    camera.lookFrom = vec3(13, 2, 3);
    camera.lookAt = vec3(0, 0, 0);
@@ -72,6 +81,8 @@ function setupDemoScene(scene, camera) {
    // camera.defocus_angle = 0.6;
    // camera.focus_dist = 10.0;
    camera.init();
+
+   return world;
 }
 
 function setup() {
@@ -81,11 +92,9 @@ function setup() {
    buffer = createGraphics(I_WIDTH, I_HEIGHT, WEBGL);
    buffer.loadPixels();
 
-   const Scene = new HittableList();
-   Camera = new RCamera(I_WIDTH, I_HEIGHT, Scene);
-
-   // setupTestScene(Scene, Camera);
-   setupDemoScene(Scene, Camera);
+   Camera = new PCamera(I_WIDTH, I_HEIGHT);
+   // Scene = setupTestScene(new HittableList(), Camera);
+   Scene = setupDemoScene(new HittableList(), Camera);
 }
 
 let prev;

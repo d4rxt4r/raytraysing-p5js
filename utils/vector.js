@@ -1,3 +1,7 @@
+import { randomDouble } from 'utils/math.js';
+
+const EPS = 1e-8;
+
 class Vector {
    constructor(x, y, z) {
       this.x = x;
@@ -47,6 +51,16 @@ class Vector {
 
    cross(vec) {
       return Vector.cross(this, vec);
+   }
+
+   axisVal(axis) {
+      if (axis === 1) {
+         return this.y;
+      }
+      if (axis === 2) {
+         return this.z;
+      }
+      return this.x;
    }
 
    static checkInputs(...values) {
@@ -114,10 +128,64 @@ class Vector {
    static copy(vec) {
       return new Vector(vec.x, vec.y, vec.z);
    }
+
+   static axisVal(vec, axis) {
+      if (axis === 1) {
+         return vec.y;
+      }
+      if (axis === 2) {
+         return vec.z;
+      }
+      return vec.x;
+   }
+
+   static reflect(vec, normal) {
+      return Vector.sub(vec, Vector.scale(normal, 2 * Vector.dot(vec, normal)));
+   }
+
+   static refract(vec, normal, eoe) {
+      const cosTheta = Math.min(Vector.dot(Vector.scale(vec, -1), normal), 1);
+      const rOutPerp = Vector.scale(Vector.add(vec, Vector.scale(normal, cosTheta)), eoe);
+      const rOutParallel = Vector.scale(normal, -Math.sqrt(Math.abs(1.0 - rOutPerp.magSq())));
+      return Vector.add(rOutPerp, rOutParallel);
+   }
+
+   static nearZero(vec) {
+      return Math.abs(vec.x) < EPS && Math.abs(vec.y) < EPS && Math.abs(vec.z) < EPS;
+   }
 }
 
 function vec3(x, y, z) {
    return new Vector(x, y, z);
 }
 
-export { Vector, vec3 };
+function randVec3(min, max) {
+   if (min == null || max == null) {
+      return vec3(Math.random(), Math.random(), Math.random());
+   }
+
+   return vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
+}
+
+function randVec3InUnitSphere() {
+   while (true) {
+      const p = randVec3(-1, 1);
+      if (p.magSq() < 1) {
+         return p;
+      }
+   }
+}
+
+function randVec3OnHemisphere(normal) {
+   const onUnitSphere = randomUnitVector();
+   if (Vector.dot(onUnitSphere, normal) > 0) {
+      return onUnitSphere;
+   }
+   return Vector.mul(onUnitSphere, -1);
+}
+
+function randNormVec3() {
+   return Vector.normalize(randVec3InUnitSphere());
+}
+
+export { Vector, vec3, randVec3, randNormVec3, randVec3OnHemisphere as randomOnHemisphere };

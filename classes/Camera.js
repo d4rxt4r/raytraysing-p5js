@@ -1,20 +1,34 @@
+import { deg2rad } from 'utils/math.js';
 import { getPixelIndex, setImagePixel } from 'utils/image.js';
-import { Interval, deg2rad } from 'utils/math.js';
 import { vec3, Vector } from 'utils/vector.js';
-import { HitRecord } from 'classes/Scene.js';
+import Interval from 'classes/Interval.js';
 import Ray from 'classes/Ray.js';
 
-const { add, sub, mul, normalize, cross, scale } = Vector;
+const { add, sub, mul, normalize, cross, scale, dot } = Vector;
 
 const MAX_RAY_DEPTH = 20;
 const SAMPLES_PER_PIXEL = 30;
 const DT = new Interval(0.001, Infinity);
 
-export class Camera {
-   constructor(iw, ih, scene) {
+class HitRecord {
+   constructor({ point, normal, t } = {}) {
+      this.p = point;
+      this.normal = normal;
+      this.t = t;
+      this.mat = null;
+   }
+
+   setFaceNormal(ray, outward_normal) {
+      this.frontFace = dot(ray.direction, outward_normal) < 0;
+      this.normal = this.frontFace ? outward_normal : scale(outward_normal, -1);
+   }
+}
+
+export default class Camera {
+   constructor(iw, ih) {
       this.imageWidth = iw;
       this.imageHeight = ih;
-      this.scene = scene;
+      this.scene = null;
 
       this.maxDepth = MAX_RAY_DEPTH;
       this.spp = SAMPLES_PER_PIXEL;
@@ -82,10 +96,12 @@ export class Camera {
          return vec3(0, 0, 0);
 
          // Lambertian Reflection
-         // const dir = add3(hitRec.normal, randomUnitVector());
+         // const dir = add3(hitRec.normal, randNormVec3());
+
          // Simple Diffuse Material
-         // const dir = randomOnHemisphere(hitRec.normal);
+         // const dir = randVec3OnHemisphere(hitRec.normal);
          // return mul3(this.getRayColor(new Ray(hitRec.p, dir), depth - 1), 0.5);
+
          // non-recursive normals color
          // return normalize3(add3(hitRec.normal, 0.5));
       }

@@ -1,8 +1,7 @@
-import { reflect, nearZero, randomUnitVector, refract } from 'utils/math.js';
-import { vec3, Vector } from 'utils/vector.js';
+import { Vector, vec3, randNormVec3 } from 'utils/vector.js';
 import Ray from 'classes/Ray.js';
 
-const { add, mul, normalize, scale, dot } = Vector;
+const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
 
 class Material {
    scatter(rayIn, hitRec, attenuation, scattered) {
@@ -17,7 +16,7 @@ class Lambertian extends Material {
    }
 
    scatter(rayIn, hitRec) {
-      let scatterDirection = add(hitRec.normal, randomUnitVector());
+      let scatterDirection = add(hitRec.normal, randNormVec3());
       if (nearZero(scatterDirection)) {
          scatterDirection = rec.normal;
       }
@@ -40,7 +39,7 @@ class Metal extends Material {
    scatter(rayIn, hitRec) {
       let reflected = reflect(rayIn.direction, hitRec.normal);
       if (this.fuzz) {
-         reflected = normalize(reflected).add(scale(randomUnitVector(), this.fuzz));
+         reflected = normalize(reflected).add(scale(randNormVec3(), this.fuzz));
       }
       const scattered = new Ray(hitRec.p, reflected);
 
@@ -55,7 +54,7 @@ class Metal extends Material {
 class Dielectric extends Material {
    constructor(refIndex) {
       super();
-      this.refIdx = refIndex;
+      this.refIndex = refIndex;
    }
 
    reflectance(cosine, ri) {
@@ -65,7 +64,7 @@ class Dielectric extends Material {
    }
 
    scatter(rayIn, hitRec) {
-      const ri = hitRec.frontFace ? 1 / this.refIdx : this.refIdx;
+      const ri = hitRec.frontFace ? 1 / this.refIndex : this.refIndex;
       const unitDirection = normalize(rayIn.direction);
 
       const cos_theta = Math.min(dot(scale(unitDirection, -1), hitRec.normal), 1);
@@ -87,4 +86,4 @@ class Dielectric extends Material {
    }
 }
 
-export { Lambertian, Metal, Dielectric };
+export { Lambertian as FlatColor, Metal, Dielectric };

@@ -1,6 +1,37 @@
 let camSpp;
 let camDepth;
 
+const settingsObject = {
+   spp: 20,
+   maxDepth: 15,
+   vFov: 20,
+   defocusAngle: 0,
+   focusDist: 1,
+   viewX: 0,
+   viewY: 0,
+   viewZ: 0,
+   posX: 10,
+   posY: 2,
+   posZ: 3
+};
+
+function copySettingsFromCamera(camera, settings, drawCallback) {
+   settings.spp = camera.spp ?? settings.spp;
+   settings.maxDepth = camera.maxDepth ?? settings.maxDepth;
+   settings.vFov = camera.vFov ?? settings.vFov;
+   settings.posX = camera.lookFrom.x ?? settings.posX;
+   settings.posY = camera.lookFrom.y ?? settings.posY;
+   settings.posZ = camera.lookFrom.z ?? settings.posZ;
+   settings.viewX = camera.lookAt.x ?? settings.viewX;
+   settings.viewY = camera.lookAt.y ?? settings.viewY;
+   settings.viewZ = camera.lookAt.z ?? settings.viewZ;
+   settings.defocusAngle = camera.defocusAngle ?? settings.defocusAngle;
+   settings.focusDist = camera.focusDist ?? settings.focusDist;
+   settings.render = function () {
+      drawCallback();
+   };
+}
+
 function moveCameraView(camera, axis, val, callback) {
    camera.spp = 1;
    camera.maxDepth = 2;
@@ -28,7 +59,9 @@ function moveCamera(camera, axis, val, callback) {
    callback();
 }
 
-export function createUserInterface(Camera, settingsObject) {
+export function createUserInterface(Camera, drawCallback) {
+   copySettingsFromCamera(Camera, settingsObject, drawCallback);
+
    camSpp = settingsObject.spp;
    camDepth = settingsObject.maxDepth;
 
@@ -43,6 +76,7 @@ export function createUserInterface(Camera, settingsObject) {
       .max(100)
       .step(1)
       .onFinishChange((spp) => {
+         camSpp = spp;
          Camera.spp = spp;
          Camera.pixelSamplesScale = 1 / spp;
       });
@@ -52,6 +86,7 @@ export function createUserInterface(Camera, settingsObject) {
       .max(100)
       .step(1)
       .onFinishChange((maxDepth) => {
+         camDepth = maxDepth;
          Camera.maxDepth = maxDepth;
       });
    preview
@@ -61,6 +96,25 @@ export function createUserInterface(Camera, settingsObject) {
       .step(1)
       .onFinishChange((vFov) => {
          Camera.vFov = vFov;
+         Camera.init();
+      });
+
+   preview
+      .add(settingsObject, 'focusDist')
+      .min(0.1)
+      .max(100)
+      .step(0.1)
+      .onFinishChange((focusDist) => {
+         Camera.focusDist = focusDist;
+         Camera.init();
+      });
+   preview
+      .add(settingsObject, 'defocusAngle')
+      .min(0)
+      .max(10)
+      .step(0.001)
+      .onFinishChange((defocusAngle) => {
+         Camera.defocusAngle = defocusAngle;
          Camera.init();
       });
 

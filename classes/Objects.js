@@ -1,6 +1,6 @@
-import { int, randomInt } from 'utils/math.js';
+import { int } from 'utils/math.js';
 import { Vector, vec3 } from 'utils/vector.js';
-import { FlatColor } from 'classes/Material.js';
+import { FlatColor } from 'classes/Materials.js';
 import Interval from 'classes/Interval.js';
 import AABB from 'classes/AABB.js';
 

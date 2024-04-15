@@ -124,9 +124,17 @@ export default class Camera {
    }
 
    render(frameBuffer) {
+
+      // const worker = new Worker('render.worker.js');
+      // worker.onmessage = function(msg) {
+      //    console.warn('Message from worker', msg.data);
+      // }
+
       for (let j = 0; j < this.imageHeight; j++) {
          for (let i = 0; i < this.imageWidth; i++) {
             let pixelColor = vec3(0, 0, 0);
+
+
             for (let sample = 0; sample < this.spp; sample++) {
                const ray = this.getRay(i, j);
                pixelColor = add(pixelColor, this.getRayColor(ray, this.maxDepth));

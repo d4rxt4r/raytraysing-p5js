@@ -1,5 +1,5 @@
 import { vec3 } from 'utils/vector.js';
-import { Hittable } from 'classes/Object.js';
+import { Hittable } from 'classes/Objects.js';
 import Interval from 'classes/Interval.js';
 import AABB from 'classes/AABB.js';
 

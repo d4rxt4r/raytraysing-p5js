@@ -124,10 +124,8 @@ export default class Camera {
    }
 
    render(frameBuffer) {
-      let index;
       for (let j = 0; j < this.imageHeight; j++) {
          for (let i = 0; i < this.imageWidth; i++) {
-            index = getPixelIndex(i, j, this.imageWidth);
             let pixelColor = vec3(0, 0, 0);
             for (let sample = 0; sample < this.spp; sample++) {
                const ray = this.getRay(i, j);

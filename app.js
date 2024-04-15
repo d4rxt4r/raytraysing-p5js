@@ -17,7 +17,6 @@ const RENDER_CYCLES = 1;
 
 let Scene;
 let Camera;
-let buffer;
 let cycles = 0;
 
 function setupTestScene(scene, camera) {
@@ -92,9 +91,6 @@ function setup() {
    createCanvas(I_WIDTH, I_HEIGHT, WEBGL);
    loadPixels();
 
-   buffer = createGraphics(I_WIDTH, I_HEIGHT, WEBGL);
-   buffer.loadPixels();
-
    Camera = new PCamera(I_WIDTH, I_HEIGHT);
    Scene = setupTestScene(new HittableList(), Camera);
    // Scene = setupDemoScene(new HittableList(), Camera);
@@ -103,26 +99,25 @@ function setup() {
 let prev;
 function draw() {
    performance.mark('testStart');
-   performance.mark('testStart');
 
-   prev = Uint8ClampedArray.from(pixels);
+   // prev = Uint8ClampedArray.from(pixels);
    Camera.render(pixels);
 
-   for (let i = 0; i < prev.length; i += 4) {
-      if (prev[i] + prev[i + 1] + prev[i + 2] === 0) {
-         continue;
-      }
+   // for (let i = 0; i < prev.length; i += 4) {
+   //    if (prev[i] + prev[i + 1] + prev[i + 2] === 0) {
+   //       continue;
+   //    }
 
-      if (pixels[i] + pixels[i + 1] + pixels[i + 2] === 0) {
-         pixels[i] = prev[i];
-         pixels[i + 1] = prev[i + 1];
-         pixels[i + 2] = prev[i + 2];
-      } else {
-         pixels[i] = averageColorComponent(pixels[i], prev[i]);
-         pixels[i + 1] = averageColorComponent(pixels[i + 1], prev[i + 1]);
-         pixels[i + 2] = averageColorComponent(pixels[i + 2], prev[i + 2]);
-      }
-   }
+   //    if (pixels[i] + pixels[i + 1] + pixels[i + 2] === 0) {
+   //       pixels[i] = prev[i];
+   //       pixels[i + 1] = prev[i + 1];
+   //       pixels[i + 2] = prev[i + 2];
+   //    } else {
+   //       pixels[i] = averageColorComponent(pixels[i], prev[i]);
+   //       pixels[i + 1] = averageColorComponent(pixels[i + 1], prev[i + 1]);
+   //       pixels[i + 2] = averageColorComponent(pixels[i + 2], prev[i + 2]);
+   //    }
+   // }
 
    updatePixels();
 

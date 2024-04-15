@@ -88,6 +88,7 @@ function setupDemoScene(scene, camera) {
 }
 
 function setup() {
+   pixelDensity(1);
    createCanvas(I_WIDTH, I_HEIGHT, WEBGL);
    loadPixels();
 

@@ -1,5 +1,5 @@
-import { vec3, randVec3 } from 'utils/vector.js';
-import Interval from 'classes/Interval.js';
+import { vec3, randVec3 } from './vector.js';
+import Interval from '../classes/Interval.js';
 
 function getPixelIndex(x, y, w) {
    return (y * w + x) * 4;

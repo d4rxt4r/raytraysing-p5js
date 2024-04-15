@@ -1,5 +1,5 @@
-import { Vector, vec3, randNormVec3 } from 'utils/vector.js';
-import Ray from 'classes/Ray.js';
+import { Vector, vec3, randNormVec3 } from '../utils/vector.js';
+import Ray from './Ray.js';
 
 const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
 

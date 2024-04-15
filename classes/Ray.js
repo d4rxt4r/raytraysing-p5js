@@ -1,4 +1,4 @@
-import { Vector } from 'utils/vector.js';
+import { Vector } from '../utils/vector.js';
 
 const { add, scale } = Vector;
 

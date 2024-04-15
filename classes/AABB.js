@@ -1,5 +1,5 @@
-import { Vector } from 'utils/vector.js';
-import Interval from 'classes/Interval.js';
+import { Vector } from '../utils/vector.js';
+import Interval from './Interval.js';
 
 export default class AABB {
    constructor(a, b, c) {

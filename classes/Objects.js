@@ -1,8 +1,8 @@
-import { int } from 'utils/math.js';
-import { Vector, vec3 } from 'utils/vector.js';
-import { FlatColor } from 'classes/Materials.js';
-import Interval from 'classes/Interval.js';
-import AABB from 'classes/AABB.js';
+import { int } from '../utils/math.js';
+import { Vector, vec3 } from '../utils/vector.js';
+import { FlatColor } from './Materials.js';
+import Interval from './Interval.js';
+import AABB from './AABB.js';
 
 const { add, sub, scale, dot } = Vector;
 

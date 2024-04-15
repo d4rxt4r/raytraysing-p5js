@@ -1,9 +1,9 @@
-import { Vector, vec3 } from 'utils/vector.js';
-import { randomDouble } from 'utils/math.js';
-import { randomColor } from 'utils/image.js';
-import { HittableList } from 'classes/Scene.js';
-import { BHVNode, Sphere } from 'classes/Objects.js';
-import { FlatColor, Metal, Dielectric } from 'classes/Materials.js';
+import { Vector, vec3 } from './utils/vector.js';
+import { randomDouble } from './utils/math.js';
+import { randomColor } from './utils/image.js';
+import { HittableList } from './classes/Scene.js';
+import { BHVNode, Sphere } from './classes/Objects.js';
+import { FlatColor, Metal, Dielectric } from './classes/Materials.js';
 
 const { sub } = Vector;
 
@@ -39,16 +39,18 @@ export function DemoScene(camera) {
 
    const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 
-   camera.spp = 20;
-   camera.maxDepth = 10;
-   camera.scene = world;
-   camera.vFov = 20;
-   camera.lookFrom = vec3(13, 2, 3);
-   camera.lookAt = vec3(0, 0, 0);
-   camera.defocusAngle = 0.6;
-   camera.focusDist = 10;
+   if (camera) {
+      camera.spp = 20;
+      camera.maxDepth = 10;
+      camera.scene = world;
+      camera.vFov = 20;
+      camera.lookFrom = vec3(13, 2, 3);
+      camera.lookAt = vec3(0, 0, 0);
+      camera.defocusAngle = 0.6;
+      camera.focusDist = 10;
 
-   camera.init();
+      camera.init();
+   }
 
    return world;
 }
@@ -64,15 +66,17 @@ export function TestScene(camera) {
 
    const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 
-   camera.lookFrom = vec3(0, 2, -6);
-   camera.lookAt = vec3(0, 0, 0);
-   camera.spp = 20;
-   camera.vFov = 25;
-   camera.defocusAngle = 2;
-   camera.focusDist = 5;
-   camera.maxDepth = 15;
-   camera.scene = world;
-   camera.init();
+   if (camera) {
+      camera.lookFrom = vec3(0, 2, -6);
+      camera.lookAt = vec3(0, 0, 0);
+      camera.spp = 20;
+      camera.vFov = 25;
+      camera.defocusAngle = 2;
+      camera.focusDist = 5;
+      camera.maxDepth = 15;
+      camera.scene = world;
+      camera.init();
+   }
 
    return world;
 }

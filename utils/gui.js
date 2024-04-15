@@ -87,7 +87,7 @@ export function createUserInterface(Camera, drawCallback) {
       .onFinishChange((spp) => {
          camSpp = spp;
          Camera.spp = spp;
-         Camera.pixelSamplesScale = 1 / spp;
+         Camera.init();
       });
    preview
       .add(settingsObject, 'maxDepth')
@@ -97,6 +97,7 @@ export function createUserInterface(Camera, drawCallback) {
       .onFinishChange((maxDepth) => {
          camDepth = maxDepth;
          Camera.maxDepth = maxDepth;
+         Camera.init();
       });
    preview
       .add(settingsObject, 'vFov')

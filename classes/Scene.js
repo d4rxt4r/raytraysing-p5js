@@ -1,7 +1,7 @@
-import { vec3 } from 'utils/vector.js';
-import { Hittable } from 'classes/Objects.js';
-import Interval from 'classes/Interval.js';
-import AABB from 'classes/AABB.js';
+import { vec3 } from '../utils/vector.js';
+import { Hittable } from './Objects.js';
+import Interval from './Interval.js';
+import AABB from './AABB.js';
 
 export class HittableList extends Hittable {
    constructor(object) {

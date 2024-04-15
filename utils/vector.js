@@ -1,4 +1,4 @@
-import { randomDouble } from 'utils/math.js';
+import { randomDouble } from './math.js';
 
 const EPS = 1e-8;
 

@@ -18,14 +18,12 @@ function setup() {
    Camera = new PCamera(I_WIDTH, I_HEIGHT);
    Scene = TestScene(Camera);
    // Scene = DemoScene(Camera);
-
+   Renderer.setCamera(Camera);
    GUI = createUserInterface(Camera, draw);
 }
 
 function draw() {
-   Renderer.render(() => {
-      Camera.render(Renderer.pixels, Renderer.getChunkInterval());
-   });
+   Renderer.render();
 }
 
 setup();

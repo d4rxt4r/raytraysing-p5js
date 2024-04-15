@@ -1,8 +1,7 @@
-import { deg2rad } from 'utils/math.js';
-import { getPixelIndex, setImagePixel } from 'utils/image.js';
-import { Vector, vec3, randVec3InNormDisk } from 'utils/vector.js';
-import Interval from 'classes/Interval.js';
-import Ray from 'classes/Ray.js';
+import { deg2rad } from '../utils/math.js';
+import { Vector, vec3, randVec3InNormDisk } from '../utils/vector.js';
+import Interval from './Interval.js';
+import Ray from './Ray.js';
 
 const { add, sub, mul, normalize, cross, scale, dot } = Vector;
 
@@ -68,6 +67,9 @@ export default class Camera {
       const defocusRadius = this.focusDist * Math.tan(deg2rad(this.defocusAngle / 2));
       this._defocusDiskU = scale(this.u, defocusRadius);
       this._defocusDiskV = scale(this.v, defocusRadius);
+
+      // FIXME: 2much hackz
+      window.__canvas.setCamera(this);
    }
 
    sampleSquare() {
@@ -110,25 +112,13 @@ export default class Camera {
       return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
    }
 
-   render(frameBuffer, chunkInterval) {
-      // const worker = new Worker('render.worker.js');
-      // worker.onmessage = function(msg) {
-      //    console.warn('Message from worker', msg.data);
-      // }
-
-      const { startX = 0, startY = 0, endX = this.imageWidth, endY = this.imageHeight } = chunkInterval;
-
-      for (let j = startY; j < endY; j++) {
-         for (let i = startX; i < endX; i++) {
-            let pixelColor = vec3(0, 0, 0);
-
-            for (let sample = 0; sample < this.spp; sample++) {
-               const ray = this.getRay(i, j);
-               pixelColor = add(pixelColor, this.getRayColor(ray, this.maxDepth));
-            }
-
-            setImagePixel(frameBuffer, i, j, this.imageWidth, scale(pixelColor, this.pixelSamplesScale));
-         }
+   render(scene, x, y) {
+      let pixelColor = BLACK_CLR;
+      for (let sample = 0; sample < this.spp; sample++) {
+         const ray = this.getRay(x, y);
+         pixelColor = add(pixelColor, this.getRayColor(scene, ray, this.maxDepth));
       }
+
+      return scale(pixelColor, this.pixelSamplesScale);
    }
 }

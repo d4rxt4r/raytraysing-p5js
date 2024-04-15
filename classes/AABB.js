@@ -4,9 +4,9 @@ import Interval from 'classes/Interval.js';
 export default class AABB {
    constructor(a, b, c) {
       if (a instanceof Vector && b instanceof Vector) {
-         this.x = a.x <= b.x ? new Interval(a.x, b.x) : new Interval(b.x, a.x);
-         this.y = a.y <= b.y ? new Interval(a.y, b.y) : new Interval(b.y, a.y);
-         this.z = a.z <= b.z ? new Interval(a.z, b.z) : new Interval(b.z, a.z);
+         this.x = Interval.minmax(a.x, b.x);
+         this.y = Interval.minmax(a.y, b.y);
+         this.z = Interval.minmax(a.z, b.z);
 
          return;
       }

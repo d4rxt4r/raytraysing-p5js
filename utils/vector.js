@@ -188,7 +188,7 @@ function randVec3InNormDisk() {
 }
 
 function randVec3OnHemisphere(normal) {
-   const onUnitSphere = randomUnitVector();
+   const onUnitSphere = randNormVec3();
    if (Vector.dot(onUnitSphere, normal) > 0) {
       return onUnitSphere;
    }

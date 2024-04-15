@@ -7,6 +7,7 @@ import Ray from 'classes/Ray.js';
 const { add, sub, mul, normalize, cross, scale, dot } = Vector;
 
 const DT = new Interval(0.001, Infinity);
+const BLACK_CLR = vec3(0, 0, 0);
 
 class HitRecord {
    constructor({ point, normal, t } = {}) {
@@ -42,11 +43,10 @@ export default class Camera {
       this.pixelSamplesScale = 1 / this.spp;
       this.center = this.lookFrom.copy();
 
-      const focalLength = sub(this.lookFrom, this.lookAt).mag();
       const theta = deg2rad(this.vFov);
       const h = Math.tan(theta / 2);
 
-      this.viewportHeight = 2 * h * focalLength;
+      this.viewportHeight = 2 * h * this.focusDist;
       this.viewportWidth = this.viewportHeight * (this.imageWidth / this.imageHeight);
 
       this.w = normalize(sub(this.lookFrom, this.lookAt));
@@ -56,14 +56,14 @@ export default class Camera {
       const viewportU = scale(this.u, this.viewportWidth);
       const viewportV = scale(scale(this.v, -1), this.viewportHeight);
 
-      this.pixelDeltaU = scale(viewportU, 1 / this.imageWidth);
-      this.pixelDeltaV = scale(viewportV, 1 / this.imageHeight);
+      this._pixelDeltaU = scale(viewportU, 1 / this.imageWidth);
+      this._pixelDeltaV = scale(viewportV, 1 / this.imageHeight);
 
-      const viewportUL = sub(this.center, scale(this.w, focalLength))
+      const viewportUL = sub(this.center, scale(this.w, this.focusDist))
          .sub(scale(viewportU, 1 / 2))
          .sub(scale(viewportV, 1 / 2));
 
-      this.pixel00Loc = viewportUL.add(add(this.pixelDeltaU, this.pixelDeltaV));
+      this._pixel00Loc = viewportUL.add(add(this._pixelDeltaU, this._pixelDeltaV));
 
       const defocusRadius = this.focusDist * Math.tan(deg2rad(this.defocusAngle / 2));
       this._defocusDiskU = scale(this.u, defocusRadius);
@@ -82,11 +82,10 @@ export default class Camera {
    getRay(i, j) {
       const offset = this.sampleSquare();
       const pixelSample = add(
-         add(this.pixel00Loc, scale(this.pixelDeltaU, i + offset.x)),
-         scale(this.pixelDeltaV, j + offset.y)
+         add(this._pixel00Loc, scale(this._pixelDeltaU, i + offset.x)),
+         scale(this._pixelDeltaV, j + offset.y)
       );
       const rayOrigin = this.defocusAngle <= 0 ? this.center.copy() : this.defocusDiskSample();
-      // const rayOrigin = this.cameraCenter.copy();
       const rayDirection = sub(pixelSample, rayOrigin);
 
       return new Ray(rayOrigin, rayDirection);
@@ -94,7 +93,7 @@ export default class Camera {
 
    getRayColor(r, depth) {
       if (depth <= 0) {
-         return vec3(0, 0, 0);
+         return BLACK_CLR;
       }
 
       const hitRec = new HitRecord();
@@ -103,28 +102,15 @@ export default class Camera {
          if (scatter) {
             return mul(attenuation, this.getRayColor(scattered, depth - 1));
          }
-         return vec3(0, 0, 0);
-
-         // Lambertian Reflection
-         // const dir = add3(hitRec.normal, randNormVec3());
-
-         // Simple Diffuse Material
-         // const dir = randVec3OnHemisphere(hitRec.normal);
-         // return mul3(this.getRayColor(new Ray(hitRec.p, dir), depth - 1), 0.5);
-
-         // non-recursive normals color
-         // return normalize3(add3(hitRec.normal, 0.5));
+         return BLACK_CLR;
       }
 
-      const unitDirection = normalize(r.direction);
-      const a = 0.5 * (unitDirection.y + 1.0);
-
+      const a = 0.5 * (normalize(r.direction).y + 1.0);
       // same as add3(mul3(vec3(1, 1, 1), 1 - a), mul3(vec3(0.5, 0.7, 1), a));
       return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
    }
 
    render(frameBuffer) {
-
       // const worker = new Worker('render.worker.js');
       // worker.onmessage = function(msg) {
       //    console.warn('Message from worker', msg.data);
@@ -133,7 +119,6 @@ export default class Camera {
       for (let j = 0; j < this.imageHeight; j++) {
          for (let i = 0; i < this.imageWidth; i++) {
             let pixelColor = vec3(0, 0, 0);
-
 
             for (let sample = 0; sample < this.spp; sample++) {
                const ray = this.getRay(i, j);

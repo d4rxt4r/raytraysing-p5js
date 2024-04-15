@@ -59,7 +59,7 @@ export function TestScene(camera) {
 
    camera.lookFrom = vec3(0, 2, -6);
    camera.lookAt = vec3(0, 0, 0);
-   camera.spp = 50;
+   camera.spp = 20;
    camera.vFov = 25;
    camera.defocusAngle = 2;
    camera.focusDist = 5;

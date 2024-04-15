@@ -40,4 +40,8 @@ export default class Interval {
       const padding = delta / 2;
       return new Interval(min - padding, max + padding);
    }
+
+   static minmax(a, b) {
+      return a <= b ? new Interval(a, b) : new Interval(b, a);
+   }
 }

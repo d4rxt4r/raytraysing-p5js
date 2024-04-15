@@ -4,10 +4,10 @@ class Renderer {
          throw new Error('Canvas not provided!');
       }
 
-      this._currentSplit = 0;
-      this._splitNum = 64;
-      this._cols = Math.ceil(Math.sqrt(this._splitNum));
-      this._rows = Math.ceil(this._splitNum / this._cols);
+      this._currentChunk = 0;
+      this._chunks = 64;
+      this._cols = Math.ceil(Math.sqrt(this._chunks));
+      this._rows = Math.ceil(this._chunks / this._cols);
 
       this._chunkWidth = Math.ceil(canvas.width / this._cols);
       this._chunkHeight = Math.ceil(canvas.height / this._rows);
@@ -24,8 +24,8 @@ class Renderer {
 
    get chunkCoords() {
       return {
-         x: this._currentSplit % this._cols,
-         y: Math.floor(this._currentSplit / this._cols)
+         x: this._currentChunk % this._cols,
+         y: Math.floor(this._currentChunk / this._cols)
       };
    }
 
@@ -48,19 +48,19 @@ class Renderer {
    }
 
    render(callback) {
-      if (this._currentSplit === this._splitNum) {
-         this._currentSplit = 0;
+      if (this._currentChunk === this._chunks) {
+         this._currentChunk = 0;
          console.info('ℹ️ Generation took: ' + (performance.now() - this.t0).toFixed(2) + 'ms');
          return;
       }
 
-      if (this._currentSplit === 0) {
+      if (this._currentChunk === 0) {
          this.t0 = performance.now();
       }
 
       callback();
       this.ctx.putImageData(this.imageData, 0, 0);
-      this._currentSplit++;
+      this._currentChunk++;
 
       requestAnimationFrame(() => {
          this.render(callback);

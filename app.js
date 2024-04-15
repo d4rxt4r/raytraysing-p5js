@@ -13,16 +13,8 @@ let Scene;
 let Camera;
 let GUI;
 
-/** @type {ImageData} */
-let pixelsBuffer;
-
 function setup() {
    Renderer = createCanvas(I_WIDTH, I_HEIGHT);
-   Renderer.fill('#bada55');
-   Renderer.rect(0, 0, I_WIDTH, I_HEIGHT);
-   Renderer.render();
-   pixelsBuffer = Renderer.createImageData();
-
    Camera = new PCamera(I_WIDTH, I_HEIGHT);
    Scene = TestScene(Camera);
    // Scene = DemoScene(Camera);
@@ -30,17 +22,10 @@ function setup() {
    GUI = createUserInterface(Camera, draw);
 }
 
-let t0;
 function draw() {
-   t0 = performance.now();
-
-   Camera.render(pixelsBuffer.data);
-   Renderer.putImageData(pixelsBuffer);
-   Renderer.render();
-
-   console.info('ℹ️ Generation took: ' + (performance.now() - t0).toFixed(2) + 'ms');
-
-   // requestAnimationFrame(draw);
+   Renderer.render(() => {
+      Camera.render(Renderer.pixels, Renderer.getChunkInterval());
+   });
 }
 
 setup();

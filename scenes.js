@@ -1,7 +1,11 @@
-import { vec3 } from 'utils/vector.js';
+import { Vector, vec3 } from 'utils/vector.js';
+import { randomDouble } from 'utils/math.js';
+import { randomColor } from 'utils/image.js';
 import { HittableList } from 'classes/Scene.js';
 import { BHVNode, Sphere } from 'classes/Objects.js';
 import { FlatColor, Metal, Dielectric } from 'classes/Materials.js';
+
+const { sub } = Vector;
 
 export function DemoScene(camera) {
    const scene = new HittableList();
@@ -33,6 +37,8 @@ export function DemoScene(camera) {
    scene.add(new Sphere(vec3(-4, 1, 0), 1.0, new FlatColor(vec3(0.4, 0.2, 0.1))));
    scene.add(new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5))));
 
+   const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+
    camera.spp = 20;
    camera.maxDepth = 10;
    camera.scene = world;
@@ -44,7 +50,7 @@ export function DemoScene(camera) {
 
    camera.init();
 
-   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+   return world;
 }
 
 export function TestScene(camera) {
@@ -53,7 +59,8 @@ export function TestScene(camera) {
    scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-1.2, 0, 0.2), 0.5, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(-0.9, -0.15, 0.2), 0.4, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Dielectric(1.5)));
 
    const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 

@@ -4,8 +4,38 @@ class Renderer {
          throw new Error('Canvas not provided!');
       }
 
+      this._currentChunk = 0;
+      this._chunks = 64;
+      this._cols = Math.ceil(Math.sqrt(this._chunks));
+      this._rows = Math.ceil(this._chunks / this._cols);
+
+      this._chunkWidth = Math.ceil(canvas.width / this._cols);
+      this._chunkHeight = Math.ceil(canvas.height / this._rows);
+
+      this.t0;
+
       this._initContext(canvas);
-      this._initOffscreenContext();
+      this._initImageData();
+   }
+
+   get pixels() {
+      return this.imageData.data;
+   }
+
+   get chunkCoords() {
+      return {
+         x: this._currentChunk % this._cols,
+         y: Math.floor(this._currentChunk / this._cols)
+      };
+   }
+
+   getChunkInterval() {
+      return {
+         startX: this.chunkCoords.x * this._chunkWidth,
+         startY: this.chunkCoords.y * this._chunkHeight,
+         endX: this.chunkCoords.x * this._chunkWidth + this._chunkWidth,
+         endY: this.chunkCoords.y * this._chunkHeight + this._chunkHeight
+      };
    }
 
    _initContext(canvas) {
@@ -13,32 +43,32 @@ class Renderer {
       this.ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
    }
 
-   _initOffscreenContext() {
-      this.offCanvas = new OffscreenCanvas(this.canvas.width, this.canvas.height);
-      this.offCtx = this.offCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
+   _initImageData() {
+      this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
    }
 
-   render() {
-      this.ctx.putImageData(this.offCtx.getImageData(0, 0, this.canvas.width, this.canvas.height), 0, 0);
-   }
-
-   fill(clr) {
-      this.offCtx.fillStyle = clr;
-   }
-
-   rect(x, y, w, h) {
-      this.offCtx.fillRect(x, y, w, h);
-   }
-
-   putImageData(imageData, x = 0, y = 0) {
-      this.offCtx.putImageData(imageData, x, y);
-   }
-
-   createImageData(imageData) {
-      if (imageData instanceof ImageData) {
-         return this.offCtx.createImageData(imageData);
+   render(callback) {
+      if (this._currentChunk === this._chunks) {
+         this._currentChunk = 0;
+         console.info('ℹ️ Generation took: ' + (performance.now() - this.t0).toFixed(2) + 'ms');
+         return;
       }
-      return this.offCtx.createImageData(this.canvas.width, this.canvas.height);
+
+      if (this._currentChunk === 0) {
+         this.t0 = performance.now();
+      }
+
+      callback();
+      this.ctx.putImageData(this.imageData, 0, 0);
+      this._currentChunk++;
+
+      requestAnimationFrame(() => {
+         this.render(callback);
+      });
+   }
+
+   createImageData() {
+      return this.ctx.createImageData(this.canvas.width, this.canvas.height);
    }
 }
 

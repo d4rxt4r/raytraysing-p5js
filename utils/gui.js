@@ -32,32 +32,41 @@ function copySettingsFromCamera(camera, settings, drawCallback) {
    };
 }
 
-function moveCameraView(camera, axis, val, callback) {
-   camera.spp = 1;
-   camera.maxDepth = 2;
-   camera.lookAt[axis] = val;
-   camera.init();
-
-   callback();
+function debounce(func, ms) {
+   let timeout;
+   return function () {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, arguments), ms);
+   };
 }
 
-function restoreCameraSettings(camera, callback) {
+function _moveCameraView(camera, axis, val, callback) {
+   camera.spp = 1;
+   camera.maxDepth = 3;
+   camera.lookAt[axis] = val;
+   camera.init();
+   callback();
+}
+const moveCameraView = debounce(_moveCameraView, 100);
+
+function _restoreCameraSettings(camera, callback) {
    camera.spp = camSpp;
    camera.pixelSamplesScale = 1 / camSpp;
    camera.maxDepth = camDepth;
    camera.init();
-
-   callback();
 }
+const restoreCameraSettings = debounce(_restoreCameraSettings, 2000);
 
-function moveCamera(camera, axis, val, callback) {
+function _moveCamera(camera, axis, val, callback) {
    camera.spp = 1;
-   camera.maxDepth = 2;
+   camera.maxDepth = 3;
    camera.lookFrom[axis] = val;
    camera.init();
 
    callback();
 }
+
+const moveCamera = debounce(_moveCamera, 100);
 
 export function createUserInterface(Camera, drawCallback) {
    copySettingsFromCamera(Camera, settingsObject, drawCallback);

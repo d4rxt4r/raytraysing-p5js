@@ -110,14 +110,16 @@ export default class Camera {
       return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
    }
 
-   render(frameBuffer) {
+   render(frameBuffer, chunkInterval) {
       // const worker = new Worker('render.worker.js');
       // worker.onmessage = function(msg) {
       //    console.warn('Message from worker', msg.data);
       // }
 
-      for (let j = 0; j < this.imageHeight; j++) {
-         for (let i = 0; i < this.imageWidth; i++) {
+      const { startX = 0, startY = 0, endX = this.imageWidth, endY = this.imageHeight } = chunkInterval;
+
+      for (let j = startY; j < endY; j++) {
+         for (let i = startX; i < endX; i++) {
             let pixelColor = vec3(0, 0, 0);
 
             for (let sample = 0; sample < this.spp; sample++) {

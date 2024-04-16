@@ -23,19 +23,18 @@ class HitRecord {
 }
 
 export default class Camera {
-   constructor(iw, ih) {
+   constructor(iw, ih, settings = {}) {
       this.imageWidth = iw;
       this.imageHeight = ih;
-      this.scene = null;
 
-      this.maxDepth = 20;
-      this.spp = 30;
-      this.defocusAngle = 0;
-      this.focusDist = 1;
-      this.vFov = 90;
-      this.lookFrom = vec3(0, 0, 0);
-      this.lookAt = vec3(0, 0, -1);
-      this.vUp = vec3(0, 1, 0);
+      this.maxDepth = settings.maxDepth || 20;
+      this.spp = settings.spp || 30;
+      this.defocusAngle = settings.defocusAngle || 0;
+      this.focusDist = settings.focusDist || 1;
+      this.vFov = settings.vFov || 90;
+      this.lookFrom = settings.lookFrom || vec3(0, 0, 0);
+      this.lookAt = settings.lookAt || vec3(0, 0, -1);
+      this.vUp = settings.vUp || vec3(0, 1, 0);
    }
 
    init() {
@@ -67,9 +66,6 @@ export default class Camera {
       const defocusRadius = this.focusDist * Math.tan(deg2rad(this.defocusAngle / 2));
       this._defocusDiskU = scale(this.u, defocusRadius);
       this._defocusDiskV = scale(this.v, defocusRadius);
-
-      // FIXME: 2much hackz
-      window.__canvas.setCamera(this);
    }
 
    sampleSquare() {
@@ -93,26 +89,31 @@ export default class Camera {
       return new Ray(rayOrigin, rayDirection);
    }
 
-   getRayColor(r, depth) {
+   getRayColor(scene, ray, depth) {
       if (depth <= 0) {
          return BLACK_CLR;
       }
 
       const hitRec = new HitRecord();
-      if (this.scene.hit(r, DT, hitRec)) {
-         const { scatter, attenuation, scattered } = hitRec.mat.scatter(r, hitRec);
+      if (scene.hit(ray, DT, hitRec)) {
+         const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
          if (scatter) {
-            return mul(attenuation, this.getRayColor(scattered, depth - 1));
+            return mul(attenuation, this.getRayColor(scene, scattered, depth - 1));
          }
          return BLACK_CLR;
       }
 
-      const a = 0.5 * (normalize(r.direction).y + 1.0);
+      const a = 0.5 * (normalize(ray.direction).y + 1.0);
       // same as add3(mul3(vec3(1, 1, 1), 1 - a), mul3(vec3(0.5, 0.7, 1), a));
       return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
    }
 
    render(scene, x, y) {
+      // fixme: camera must be preinitialized
+      if (!this._pixel00Loc) {
+         this.init();
+      }
+
       let pixelColor = BLACK_CLR;
       for (let sample = 0; sample < this.spp; sample++) {
          const ray = this.getRay(x, y);

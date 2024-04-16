@@ -2,26 +2,26 @@ import { Vector } from '../utils/vector.js';
 import Interval from './Interval.js';
 
 export default class AABB {
-   constructor(a, b, c) {
-      if (a instanceof Vector && b instanceof Vector) {
-         this.x = Interval.minmax(a.x, b.x);
-         this.y = Interval.minmax(a.y, b.y);
-         this.z = Interval.minmax(a.z, b.z);
+   constructor(...args) {
+      if (args[0] instanceof Vector && args[1] instanceof Vector) {
+         this.x = Interval.minmax(args[0].x, args[1].x);
+         this.y = Interval.minmax(args[0].y, args[1].y);
+         this.z = Interval.minmax(args[0].z, args[1].z);
 
          return;
       }
 
-      if (a instanceof AABB && b instanceof AABB) {
-         this.x = new Interval(a.x, b.x);
-         this.y = new Interval(a.y, b.y);
-         this.z = new Interval(a.z, b.z);
+      if (args[0] instanceof AABB && args[1] instanceof AABB) {
+         this.x = new Interval(args[0].x, args[1].x);
+         this.y = new Interval(args[0].y, args[1].y);
+         this.z = new Interval(args[0].z, args[1].z);
 
          return;
       }
 
-      this.x = a;
-      this.y = b;
-      this.z = c;
+      this.x = args[0];
+      this.y = args[1];
+      this.z = args[2];
    }
 
    axisInterval(n) {

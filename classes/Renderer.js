@@ -1,45 +1,50 @@
 import { setImagePixel } from '../utils/image.js';
 import { randomInt } from '../utils/math.js';
+import { calculateZoom } from '../utils/canvas.js';
 
 export default class Renderer {
    constructor(canvas) {
       if (!canvas) {
          throw new Error('Canvas not provided!');
       }
+      this._imageWidth = canvas.width;
+      this._imageHeight = canvas.height;
 
       this._threads = 4;
       this._workers = [];
+      this._workersReady = false;
+      this._workersReadyCount = 0;
 
       this._chunks = 64;
       this._currentChunk = 0;
 
-      this._cols = Math.ceil(Math.sqrt(this._chunks));
-      this._rows = Math.ceil(this._chunks / this._cols);
+      this._chunkCols = Math.ceil(Math.sqrt(this._chunks));
+      this._chunkRows = Math.ceil(this._chunks / this._chunkCols);
 
-      this._chunkWidth = Math.ceil(canvas.width / this._cols);
-      this._chunkHeight = Math.ceil(canvas.height / this._rows);
-
-      this._imageWidth = canvas.width;
-      this._imageHeight = canvas.height;
+      this._chunkWidth = Math.ceil(canvas.width / this._chunkCols);
+      this._chunkHeight = Math.ceil(canvas.height / this._chunkRows);
 
       this._t0;
 
       this._initContext(canvas);
-      this._initImageData();
       this._initWorkers();
+      this._initCamera();
+      this._initImageData();
    }
 
-   setCamera(camera) {
-      if (!this._workers.length) {
-         this._initWorkers();
-      }
+   resizeCanvas(w, h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
+      this.canvas.style.zoom = calculateZoom(w);
 
-      this._workers.forEach((worker) =>
-         worker.postMessage({
-            action: 'initCamera',
-            camera: camera
-         })
-      );
+      this._imageWidth = w;
+      this._imageHeight = h;
+
+      this._chunkWidth = Math.ceil(this.canvas.width / this._chunkCols);
+      this._chunkHeight = Math.ceil(this.canvas.height / this._chunkRows);
+
+      this._initCamera();
+      this._initImageData();
    }
 
    get pixels() {
@@ -48,8 +53,8 @@ export default class Renderer {
 
    get chunkCoords() {
       return {
-         x: this._currentChunk % this._cols,
-         y: Math.floor(this._currentChunk / this._cols)
+         x: this._currentChunk % this._chunkCols,
+         y: Math.floor(this._currentChunk / this._chunkCols)
       };
    }
 
@@ -67,10 +72,6 @@ export default class Renderer {
       this.ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
    }
 
-   _initImageData() {
-      this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
-   }
-
    _initWorkers() {
       for (let i = 0; i < this._threads; i++) {
          const worker = new Worker('render.worker.js', { type: 'module' });
@@ -82,6 +83,22 @@ export default class Renderer {
 
          this._workers.push(worker);
       }
+   }
+
+   _initCamera() {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'initCamera',
+            camera: {
+               imageWidth: this._imageWidth,
+               imageHeight: this._imageHeight
+            }
+         });
+      });
+   }
+
+   _initImageData() {
+      this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
    }
 
    render() {

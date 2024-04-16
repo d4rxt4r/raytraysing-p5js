@@ -1,10 +1,10 @@
 import { Vector, vec3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
-import { randomColor } from './utils/image.js';
+import { randomColor, LOADED_TEX } from './utils/image.js';
 import { HittableList } from './classes/Scene.js';
 import { BHVNode, Sphere } from './classes/Objects.js';
-import { Diffuse, Metal, Dielectric } from './classes/Materials.js';
-import { CheckerBoard } from './classes/Texture.js';
+import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
+import { CheckerBoard, ImageTexture } from './classes/Texture.js';
 
 const { sub } = Vector;
 
@@ -73,8 +73,10 @@ function TestScene() {
    scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Dielectric(1.5)));
-   scene.add(new Sphere(vec3(-0.9, -0.15, 0.2), 0.4, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(-0.4, -0.7, -0.9), 0.5, new DiffusedLight(vec3(1, 5, 2))));
+   // scene.add(new Sphere(vec3(-0.3, 0.3, -1), 0.1, new DiffusedLight(vec3(10, 8, 7))));
+   // scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Diffuse(new ImageTexture(LOADED_TEX[0]))));
+   scene.add(new Sphere(vec3(-0.8, 0.2, -0.8), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
@@ -82,11 +84,12 @@ function TestScene() {
 const TestSceneCamera = {
    lookFrom: vec3(0, 2, -8),
    lookAt: vec3(0, 0, 0),
-   spp: 10,
+   spp: 200,
+   maxDepth: 50,
    vFov: 15,
    defocusAngle: 1,
    focusDist: 8,
-   maxDepth: 15
+   background: vec3(0.00, 0.01, 0.01)
 };
 
 export { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera };

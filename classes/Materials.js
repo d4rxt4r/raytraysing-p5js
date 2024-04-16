@@ -1,5 +1,5 @@
 import { Vector, vec3, randNormVec3 } from '../utils/vector.js';
-import { Texture, SolidColor } from './Texture.js';
+import { Texture, SolidColor, BLACK_CLR } from './Texture.js';
 import Ray from './Ray.js';
 
 const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
@@ -7,6 +7,10 @@ const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
 class Material {
    scatter() {
       return false;
+   }
+
+   emitted() {
+      return BLACK_CLR;
    }
 }
 
@@ -92,4 +96,21 @@ class Dielectric extends Material {
    }
 }
 
-export { Lambertian as Diffuse, Metal, Dielectric };
+class DiffusedLight extends Material {
+   constructor(arg) {
+      super();
+
+      if (arg instanceof Texture) {
+         this._texture = arg;
+         return;
+      }
+
+      this._texture = new SolidColor(arg);
+   }
+
+   emitted(u, v, p) {
+      return this._texture.value(u, v, p);
+   }
+}
+
+export { Lambertian as Diffuse, Metal, Dielectric, DiffusedLight };

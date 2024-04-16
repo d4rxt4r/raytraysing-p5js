@@ -1,5 +1,4 @@
 import RCamera from './classes/Camera.js';
-
 import { TestScene, TestSceneCamera, DemoScene } from './scenes.js';
 
 let Scene;

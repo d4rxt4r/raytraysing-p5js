@@ -39,6 +39,7 @@ export default class Camera {
       this.lookFrom = settings.lookFrom || vec3(0, 0, 0);
       this.lookAt = settings.lookAt || vec3(0, 0, -1);
       this.vUp = settings.vUp || vec3(0, 1, 0);
+      this.background = settings.background || vec3(0.7, 0.8, 1.0);
    }
 
    init() {
@@ -99,17 +100,21 @@ export default class Camera {
       }
 
       const hitRec = new HitRecord();
-      if (scene.hit(ray, DT, hitRec)) {
-         const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
-         if (scatter) {
-            return mul(attenuation, this.getRayColor(scene, scattered, depth - 1));
-         }
-         return BLACK_CLR;
+
+      if (!scene.hit(ray, DT, hitRec)) {
+         return this.background;
       }
 
-      const a = 0.5 * (normalize(ray.direction).y + 1.0);
-      // same as add3(mul3(vec3(1, 1, 1), 1 - a), mul3(vec3(0.5, 0.7, 1), a));
-      return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
+      const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
+      const colorFromEmission = hitRec.mat.emitted(hitRec.u, hitRec.v, hitRec.p);
+
+      if (!scatter) {
+         return colorFromEmission;
+      }
+
+      const colorFromScatter = mul(attenuation, this.getRayColor(scene, scattered, depth - 1));
+
+      return add(colorFromEmission, colorFromScatter);
    }
 
    render(scene, x, y) {

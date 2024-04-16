@@ -13,6 +13,10 @@ class HitRecord {
       this.p = point;
       this.normal = normal;
       this.t = t;
+      this.u;
+      this.v;
+      this.frontFace;
+      this.normal;
       this.mat = null;
    }
 

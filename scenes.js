@@ -3,13 +3,14 @@ import { randomDouble } from './utils/math.js';
 import { randomColor } from './utils/image.js';
 import { HittableList } from './classes/Scene.js';
 import { BHVNode, Sphere } from './classes/Objects.js';
-import { FlatColor, Metal, Dielectric } from './classes/Materials.js';
+import { Diffuse, Metal, Dielectric } from './classes/Materials.js';
+import { CheckerBoard } from './classes/Texture.js';
 
 const { sub } = Vector;
 
 function DemoScene(camera) {
    const scene = new HittableList();
-   scene.add(new Sphere(vec3(0, -1000, 0), 1000, new FlatColor(vec3(0.5, 0.5, 0.5))));
+   scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(vec3(0.5, 0.5, 0.5))));
 
    for (let a = -11; a < 11; a++) {
       for (let b = -11; b < 11; b++) {
@@ -19,7 +20,7 @@ function DemoScene(camera) {
             if (choose_mat < 0.8) {
                // diffuse
                const albedo = randomColor();
-               scene.add(new Sphere(center, 0.2, new FlatColor(albedo)));
+               scene.add(new Sphere(center, 0.2, new Diffuse(albedo)));
             } else if (choose_mat < 0.95) {
                // metal
                const albedo = randomColor(0.5, 1);
@@ -34,7 +35,7 @@ function DemoScene(camera) {
    }
 
    scene.add(new Sphere(vec3(0, 1, 0), 1.0, new Dielectric(1.5)));
-   scene.add(new Sphere(vec3(-4, 1, 0), 1.0, new FlatColor(vec3(0.4, 0.2, 0.1))));
+   scene.add(new Sphere(vec3(-4, 1, 0), 1.0, new Diffuse(vec3(0.4, 0.2, 0.1))));
    scene.add(new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5))));
 
    const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
@@ -66,7 +67,9 @@ const DemoSceneCamera = {
 
 function TestScene() {
    const scene = new HittableList();
-   scene.add(new Sphere(vec3(0, -50.5, 0), 50, new FlatColor(vec3(0.8, 0.8, 0.0))));
+
+   const checker = new CheckerBoard(0.32, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
+   scene.add(new Sphere(vec3(0, -50.5, 0), 50, new Diffuse(checker)));
    scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.1)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));

@@ -1,6 +1,6 @@
 import { int } from '../utils/math.js';
 import { Vector, vec3 } from '../utils/vector.js';
-import { FlatColor } from './Materials.js';
+import { Diffuse } from './Materials.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
@@ -72,7 +72,7 @@ class Sphere extends Hittable {
       super();
       this.center = center;
       this.radius = radius || 0;
-      this.mat = mat || new FlatColor(vec3(1, 1, 1));
+      this.mat = mat || new Diffuse(vec3(1, 1, 1));
 
       const rVec = vec3(radius, radius, radius);
       this._boundingBox = new AABB(sub(this.center, rVec), add(this.center, rVec));

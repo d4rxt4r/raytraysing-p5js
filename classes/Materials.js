@@ -1,4 +1,5 @@
 import { Vector, vec3, randNormVec3 } from '../utils/vector.js';
+import { Texture, SolidColor } from './Texture.js';
 import Ray from './Ray.js';
 
 const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
@@ -10,9 +11,14 @@ class Material {
 }
 
 class Lambertian extends Material {
-   constructor(albedo) {
+   constructor(arg) {
       super();
-      this.albedo = albedo;
+      if (arg instanceof Texture) {
+         this._texture = arg;
+         return;
+      }
+
+      this._texture = new SolidColor(arg);
    }
 
    scatter(rayIn, hitRec) {
@@ -24,7 +30,7 @@ class Lambertian extends Material {
       return {
          scatter: true,
          scattered: new Ray(hitRec.p, scatterDirection),
-         attenuation: this.albedo
+         attenuation: this._texture.value(hitRec.u, hitRec.v, hitRec.p)
       };
    }
 }
@@ -86,4 +92,4 @@ class Dielectric extends Material {
    }
 }
 
-export { Lambertian as FlatColor, Metal, Dielectric };
+export { Lambertian as Diffuse, Metal, Dielectric };

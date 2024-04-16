@@ -7,7 +7,7 @@ import { FlatColor, Metal, Dielectric } from './classes/Materials.js';
 
 const { sub } = Vector;
 
-export function DemoScene(camera) {
+function DemoScene(camera) {
    const scene = new HittableList();
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new FlatColor(vec3(0.5, 0.5, 0.5))));
 
@@ -42,7 +42,6 @@ export function DemoScene(camera) {
    if (camera) {
       camera.spp = 20;
       camera.maxDepth = 10;
-      camera.scene = world;
       camera.vFov = 20;
       camera.lookFrom = vec3(13, 2, 3);
       camera.lookAt = vec3(0, 0, 0);
@@ -55,7 +54,17 @@ export function DemoScene(camera) {
    return world;
 }
 
-export function TestScene(camera) {
+const DemoSceneCamera = {
+   spp: 20,
+   maxDepth: 10,
+   vFov: 20,
+   lookFrom: vec3(13, 2, 3),
+   lookAt: vec3(0, 0, 0),
+   defocusAngle: 0.6,
+   focusDist: 10
+};
+
+function TestScene() {
    const scene = new HittableList();
    scene.add(new Sphere(vec3(0, -50.5, 0), 50, new FlatColor(vec3(0.8, 0.8, 0.0))));
    scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.5)));
@@ -64,19 +73,17 @@ export function TestScene(camera) {
    scene.add(new Sphere(vec3(-0.9, -0.15, 0.2), 0.4, new Metal(vec3(0.8, 0.8, 0.8))));
    scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Dielectric(1.5)));
 
-   const world = new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
-
-   if (camera) {
-      camera.lookFrom = vec3(0, 2, -6);
-      camera.lookAt = vec3(0, 0, 0);
-      camera.spp = 20;
-      camera.vFov = 25;
-      camera.defocusAngle = 2;
-      camera.focusDist = 5;
-      camera.maxDepth = 15;
-      camera.scene = world;
-      camera.init();
-   }
-
-   return world;
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
+
+const TestSceneCamera = {
+   lookFrom: vec3(0, 2, -6),
+   lookAt: vec3(0, 0, 0),
+   spp: 20,
+   vFov: 25,
+   defocusAngle: 1,
+   focusDist: 6,
+   maxDepth: 15
+};
+
+export { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera };

@@ -1,7 +1,7 @@
 let camSpp;
 let camDepth;
 
-const settingsObject = {
+const defaultSettings = {
    spp: 20,
    maxDepth: 15,
    vFov: 20,
@@ -15,20 +15,23 @@ const settingsObject = {
    posZ: 3
 };
 
-function copySettingsFromCamera(camera, settings, drawCallback) {
+function copySettingsFromCamera(camera, settings, { render, fullRender }) {
    settings.spp = camera.spp ?? settings.spp;
    settings.maxDepth = camera.maxDepth ?? settings.maxDepth;
    settings.vFov = camera.vFov ?? settings.vFov;
-   settings.posX = camera.lookFrom.x ?? settings.posX;
-   settings.posY = camera.lookFrom.y ?? settings.posY;
-   settings.posZ = camera.lookFrom.z ?? settings.posZ;
-   settings.viewX = camera.lookAt.x ?? settings.viewX;
-   settings.viewY = camera.lookAt.y ?? settings.viewY;
-   settings.viewZ = camera.lookAt.z ?? settings.viewZ;
+   settings.posX = camera.lookFrom?.x ?? settings.posX;
+   settings.posY = camera.lookFrom?.y ?? settings.posY;
+   settings.posZ = camera.lookFrom?.z ?? settings.posZ;
+   settings.viewX = camera.lookAt?.x ?? settings.viewX;
+   settings.viewY = camera.lookAt?.y ?? settings.viewY;
+   settings.viewZ = camera.lookAt?.z ?? settings.viewZ;
    settings.defocusAngle = camera.defocusAngle ?? settings.defocusAngle;
    settings.focusDist = camera.focusDist ?? settings.focusDist;
    settings.render = function () {
-      drawCallback();
+      render();
+   };
+   settings.renderFull = function () {
+      fullRender();
    };
 }
 
@@ -68,139 +71,140 @@ function _moveCamera(camera, axis, val, callback) {
 
 const moveCamera = debounce(_moveCamera, 100);
 
-export function createUserInterface(Camera, drawCallback) {
-   copySettingsFromCamera(Camera, settingsObject, drawCallback);
+export function createUserInterface(cameraSettings, { render, fullRender }) {
+   copySettingsFromCamera(cameraSettings, defaultSettings, { render, fullRender });
 
-   camSpp = settingsObject.spp;
-   camDepth = settingsObject.maxDepth;
+   camSpp = defaultSettings.spp;
+   camDepth = defaultSettings.maxDepth;
 
    const GUI = new dat.gui.GUI({ name: 'Render Setting' });
-   GUI.remember(settingsObject);
+   GUI.remember(defaultSettings);
 
    const preview = GUI.addFolder('Preview');
    preview.closed = false;
    preview
-      .add(settingsObject, 'spp')
+      .add(defaultSettings, 'spp')
       .min(1)
-      .max(100)
+      .max(1000)
       .step(1)
       .onFinishChange((spp) => {
          camSpp = spp;
-         Camera.spp = spp;
-         Camera.init();
+         // cameraSettings.spp = spp;
+         // cameraSettings.init();
       });
    preview
-      .add(settingsObject, 'maxDepth')
+      .add(defaultSettings, 'maxDepth')
       .min(1)
       .max(100)
       .step(1)
       .onFinishChange((maxDepth) => {
          camDepth = maxDepth;
-         Camera.maxDepth = maxDepth;
-         Camera.init();
+         // cameraSettings.maxDepth = maxDepth;
+         // cameraSettings.init();
       });
    preview
-      .add(settingsObject, 'vFov')
+      .add(defaultSettings, 'vFov')
       .min(1)
       .max(120)
       .step(1)
       .onFinishChange((vFov) => {
-         Camera.vFov = vFov;
-         Camera.init();
+         // cameraSettings.vFov = vFov;
+         // cameraSettings.init();
       });
 
    preview
-      .add(settingsObject, 'focusDist')
+      .add(defaultSettings, 'focusDist')
       .min(0.1)
       .max(100)
       .step(0.1)
       .onFinishChange((focusDist) => {
-         Camera.focusDist = focusDist;
-         Camera.init();
+         // cameraSettings.focusDist = focusDist;
+         // cameraSettings.init();
       });
    preview
-      .add(settingsObject, 'defocusAngle')
+      .add(defaultSettings, 'defocusAngle')
       .min(0)
       .max(10)
       .step(0.001)
       .onFinishChange((defocusAngle) => {
-         Camera.defocusAngle = defocusAngle;
-         Camera.init();
+         // cameraSettings.defocusAngle = defocusAngle;
+         // cameraSettings.init();
       });
 
    preview
-      .add(settingsObject, 'viewX')
-      .min(-1)
-      .max(1)
+      .add(defaultSettings, 'viewX')
+      .min(-10)
+      .max(10)
       .step(0.01)
       .onChange((val) => {
-         moveCameraView(Camera, 'x', val, settingsObject.render);
+         // moveCameraView(cameraSettings, 'x', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
    preview
-      .add(settingsObject, 'viewY')
-      .min(-1)
-      .max(1)
+      .add(defaultSettings, 'viewY')
+      .min(-10)
+      .max(10)
       .step(0.01)
       .onChange((val) => {
-         moveCameraView(Camera, 'y', val, settingsObject.render);
+         // moveCameraView(cameraSettings, 'y', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
    preview
-      .add(settingsObject, 'viewZ')
-      .min(-1)
-      .max(1)
+      .add(defaultSettings, 'viewZ')
+      .min(-10)
+      .max(10)
       .step(0.01)
       .onChange((val) => {
-         moveCameraView(Camera, 'z', val, settingsObject.render);
+         // moveCameraView(cameraSettings, 'z', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
    preview
-      .add(settingsObject, 'posX')
+      .add(defaultSettings, 'posX')
       .min(-100)
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         moveCamera(Camera, 'x', val, settingsObject.render);
+         // moveCamera(cameraSettings, 'x', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
    preview
-      .add(settingsObject, 'posY')
+      .add(defaultSettings, 'posY')
       .min(-100)
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         moveCamera(Camera, 'y', val, settingsObject.render);
+         // moveCamera(cameraSettings, 'y', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
    preview
-      .add(settingsObject, 'posZ')
+      .add(defaultSettings, 'posZ')
       .min(-100)
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         moveCamera(Camera, 'z', val, settingsObject.render);
+         // moveCamera(cameraSettings, 'z', val, defaultSettings.render);
       })
       .onFinishChange(() => {
-         restoreCameraSettings(Camera, settingsObject.render);
+         // restoreCameraSettings(cameraSettings, defaultSettings.render);
       });
 
-   GUI.add(settingsObject, 'render');
+   GUI.add(defaultSettings, 'render');
+   GUI.add(defaultSettings, 'renderFull');
 
    return GUI;
 }

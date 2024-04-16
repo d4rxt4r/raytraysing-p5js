@@ -1,7 +1,7 @@
 import Renderer from '../classes/Renderer.js';
 
-function calculateZoom(canvas) {
-   return (window.innerWidth - window.innerWidth / 3) / canvas.width;
+function calculateZoom(canvasWidth) {
+   return (window.innerWidth - window.innerWidth / 3) / canvasWidth;
 }
 
 function createCanvas(width = 100, height = 100, parentEl = document.body) {
@@ -14,9 +14,9 @@ function createCanvas(width = 100, height = 100, parentEl = document.body) {
    canvas.width = width;
    canvas.height = height;
 
-   canvas.style.zoom = calculateZoom(canvas);
+   canvas.style.zoom = calculateZoom(canvas.width);
    window.addEventListener('resize', () => {
-      canvas.style.zoom = calculateZoom(canvas);
+      canvas.style.zoom = calculateZoom(canvas.width);
    });
 
    parentEl.appendChild(canvas);
@@ -25,4 +25,4 @@ function createCanvas(width = 100, height = 100, parentEl = document.body) {
    return window.__canvas;
 }
 
-export { createCanvas };
+export { createCanvas, calculateZoom };

@@ -33,11 +33,9 @@ class CheckerBoard extends Texture {
    }
 
    value(u, v, p) {
-      const xInteger = Math.floor(this._invScale * p.x);
-      const yInteger = Math.floor(this._invScale * p.y);
-      const zInteger = Math.floor(this._invScale * p.z);
-
-      const isEven = (xInteger + yInteger + zInteger) % 2 == 0;
+      const xBlock = Math.floor(u * this._invScale);
+      const yBlock = Math.floor(v * this._invScale);
+      const isEven = (xBlock + yBlock) % 2 == 0;
 
       return isEven ? this._even.value(u, v, p) : this._odd.value(u, v, p);
    }

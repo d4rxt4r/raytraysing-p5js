@@ -103,9 +103,22 @@ class Sphere extends Hittable {
       hitRec.p = ray.at(hitRec.t);
       const outward_normal = scale(sub(hitRec.p, this.center), 1 / this.radius);
       hitRec.setFaceNormal(ray, outward_normal);
+      const { u, v } = this.getSphereUV(outward_normal);
+      hitRec.u = u;
+      hitRec.v = v;
       hitRec.mat = this.mat;
 
       return true;
+   }
+
+   getSphereUV(p) {
+      const theta = Math.acos(-p.y);
+      const phi = Math.atan2(-p.z, p.x) + Math.PI;
+
+      return {
+         u: phi / (2 * Math.PI),
+         v: theta / Math.PI
+      };
    }
 }
 

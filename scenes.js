@@ -68,24 +68,24 @@ const DemoSceneCamera = {
 function TestScene() {
    const scene = new HittableList();
 
-   const checker = new CheckerBoard(0.32, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
-   scene.add(new Sphere(vec3(0, -50.5, 0), 50, new Diffuse(checker)));
-   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Metal(vec3(0.8, 0.6, 0.2), 0.1)));
+   scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
+   const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
+   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-0.9, -0.15, 0.2), 0.4, new Metal(vec3(0.8, 0.8, 0.8))));
    scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Dielectric(1.5)));
+   scene.add(new Sphere(vec3(-0.9, -0.15, 0.2), 0.4, new Metal(vec3(0.8, 0.8, 0.8))));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
 
 const TestSceneCamera = {
-   lookFrom: vec3(0, 2, -6),
+   lookFrom: vec3(0, 2, -8),
    lookAt: vec3(0, 0, 0),
-   spp: 20,
+   spp: 10,
    vFov: 15,
    defocusAngle: 1,
-   focusDist: 6,
+   focusDist: 8,
    maxDepth: 15
 };
 

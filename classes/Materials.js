@@ -5,7 +5,7 @@ import Ray from './Ray.js';
 const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
 
 class Material {
-   scatter(rayIn, hitRec, attenuation, scattered) {
+   scatter() {
       return false;
    }
 }

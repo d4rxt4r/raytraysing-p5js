@@ -5,10 +5,14 @@ import { HittableList } from './classes/Scene.js';
 import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture } from './classes/Texture.js';
+import { alea } from './lib/alea.min.js';
 
 const { sub } = Vector;
 
 function DemoScene(camera) {
+   // Use alea alg to Ensure that Math.random gives same output across all workers
+   Math.random = alea;
+
    const scene = new HittableList();
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(vec3(0.5, 0.5, 0.5))));
 
@@ -81,7 +85,7 @@ function TestScene() {
 const TestSceneCamera = {
    lookFrom: vec3(0, 2, -8),
    lookAt: vec3(0, -0.1, 0),
-   spp: 200,
+   spp: 20,
    maxDepth: 50,
    vFov: 12,
    defocusAngle: 0.4,
@@ -172,15 +176,28 @@ const DarkSceneCamera = {
    background: vec3(0, 0, 0)
 };
 
-export {
-   TestScene,
-   TestSceneCamera,
-   DemoScene,
-   DemoSceneCamera,
-   DarkScene,
-   DarkSceneCamera,
-   QuadsScene,
-   QuadsSceneCamera,
-   CornellBox,
-   CornellBoxCamera
+const SCENE_NAMES = ['Test Scene', 'Spheres', 'Quads', 'Dark', 'Cornell Box'];
+const SCENE_LIST = {
+   'Test Scene': {
+      scene: TestScene,
+      camera: TestSceneCamera
+   },
+   Spheres: {
+      scene: DemoScene,
+      camera: DemoSceneCamera
+   },
+   Quads: {
+      scene: QuadsScene,
+      camera: QuadsSceneCamera
+   },
+   Dark: {
+      scene: DarkScene,
+      camera: DarkSceneCamera
+   },
+   'Cornell Box': {
+      scene: CornellBox,
+      camera: CornellBoxCamera
+   }
 };
+
+export { SCENE_NAMES, SCENE_LIST };

@@ -1,45 +1,23 @@
-// Ensure that Math.random gives same output on all workers
-import { alea } from './lib/alea.min.js';
-Math.random = alea;
-
+import { SCENE_LIST } from './scenes.js';
 import RCamera from './classes/Camera.js';
-import {
-   TestScene,
-   TestSceneCamera,
-   DemoScene,
-   DemoSceneCamera,
-   DarkScene,
-   DarkSceneCamera,
-   QuadsScene,
-   QuadsSceneCamera,
-   CornellBox,
-   CornellBoxCamera
-} from './scenes.js';
 
+let currentScene;
 let Scene;
 let Camera;
 let pixelColor;
+
 onmessage = (e) => {
-   const { action, camera, data } = e.data;
+   const { action, scene, camera, data } = e.data;
 
    if (action === 'render') {
       pixelColor = Camera.render(Scene, data.x, data.y);
-      postMessage({ ...data, color: pixelColor });
-
-      return;
+      return postMessage({ ...data, color: pixelColor });
    }
 
-   if (action === 'initCamera') {
-      Camera = new RCamera(camera.imageWidth, camera.imageHeight, DarkSceneCamera);
-
-      if (!Scene) {
-         Scene = DarkScene();
-      }
-
-      return;
-   }
-
-   if (action === 'setCameraSettings') {
+   if (action === 'initScene') {
+      currentScene = scene;
+      Scene = SCENE_LIST[scene].scene();
+      Camera = new RCamera(camera.imageWidth, camera.imageHeight, SCENE_LIST[scene].camera);
       return;
    }
 };

@@ -1,12 +1,15 @@
+import { SCENE_LIST, SCENE_NAMES } from '../scenes.js';
+
 let camSpp;
 let camDepth;
 
 const defaultSettings = {
+   scene: SCENE_NAMES[0],
    spp: 20,
    maxDepth: 15,
-   vFov: 20,
+   vFov: 30,
    defocusAngle: 0,
-   focusDist: 1,
+   focusDist: 3,
    viewX: 0,
    viewY: 0,
    viewZ: 0,
@@ -71,14 +74,16 @@ function _moveCamera(camera, axis, val, callback) {
 
 const moveCamera = debounce(_moveCamera, 100);
 
-export function createUserInterface(cameraSettings, { render, fullRender }) {
-   copySettingsFromCamera(cameraSettings, defaultSettings, { render, fullRender });
-
-   camSpp = defaultSettings.spp;
-   camDepth = defaultSettings.maxDepth;
+export function createUserInterface(Renderer, { render, fullRender }) {
+   copySettingsFromCamera({}, defaultSettings, { render, fullRender });
+   Renderer.setScene(defaultSettings.scene);
 
    const GUI = new dat.gui.GUI({ name: 'Render Setting' });
    GUI.remember(defaultSettings);
+
+   GUI.add(defaultSettings, 'scene', SCENE_NAMES).onFinishChange((scene) => {
+      Renderer.setScene(scene);
+   });
 
    const preview = GUI.addFolder('Preview');
    preview.closed = false;

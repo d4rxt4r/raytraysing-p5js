@@ -12,8 +12,6 @@ export default class Renderer {
       this._threads = navigator.hardwareConcurrency || 4;
       this._workers = [];
 
-      this._currentChunk = 0;
-
       const chunks = this._threads * 4;
       this._chunkCols = Math.floor(Math.sqrt(chunks));
       this._chunkRows = Math.ceil(chunks / this._chunkCols);
@@ -24,9 +22,10 @@ export default class Renderer {
 
       this._t0;
 
+      this.scene;
+
       this._initContext(canvas);
-      this._initWorkers();
-      this._initCamera();
+      this._initRenderWorkers();
       this._initImageData();
    }
 
@@ -41,27 +40,42 @@ export default class Renderer {
       this._chunkWidth = Math.floor(this.canvas.width / this._chunkCols);
       this._chunkHeight = Math.floor(this.canvas.height / this._chunkRows);
 
-      this._initCamera();
       this._initImageData();
+   }
+
+   setScene(scene) {
+      this._scene = scene;
+
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'initScene',
+            scene: scene,
+            camera: {
+               imageWidth: this._imageWidth,
+               imageHeight: this._imageHeight
+            }
+         });
+      });
    }
 
    get pixels() {
       return this.imageData.data;
    }
 
-   get chunkCoords() {
+   getChunkCoords(chunkIndex) {
       return {
-         x: this._currentChunk % this._chunkCols,
-         y: Math.floor(this._currentChunk / this._chunkCols)
+         x: chunkIndex % this._chunkCols,
+         y: Math.floor(chunkIndex / this._chunkCols)
       };
    }
 
-   getChunkInterval() {
+   getChunkInterval(chunkIndex) {
+      const { x, y } = this.getChunkCoords(chunkIndex);
       return {
-         startX: this.chunkCoords.x * this._chunkWidth,
-         startY: this.chunkCoords.y * this._chunkHeight,
-         endX: this.chunkCoords.x * this._chunkWidth + this._chunkWidth - 1,
-         endY: this.chunkCoords.y * this._chunkHeight + this._chunkHeight - 1
+         startX: x * this._chunkWidth,
+         startY: y * this._chunkHeight,
+         endX: x * this._chunkWidth + this._chunkWidth - 1,
+         endY: y * this._chunkHeight + this._chunkHeight - 1
       };
    }
 
@@ -70,7 +84,7 @@ export default class Renderer {
       this.ctx = canvas.getContext('2d', { willReadFrequently: true });
    }
 
-   _initWorkers() {
+   _initRenderWorkers() {
       for (let i = 0; i < this._threads; i++) {
          const worker = new Worker('render.worker.js', { type: 'module' });
          worker.onmessage = (e) => {
@@ -104,18 +118,6 @@ export default class Renderer {
       }
    }
 
-   _initCamera() {
-      this._workers.forEach((worker) => {
-         worker.postMessage({
-            action: 'initCamera',
-            camera: {
-               imageWidth: this._imageWidth,
-               imageHeight: this._imageHeight
-            }
-         });
-      });
-   }
-
    _initImageData() {
       this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
    }
@@ -123,11 +125,15 @@ export default class Renderer {
    render() {
       this._t0 = performance.now();
 
-      for (let i = 0; i < this._chunks; i++) {
-         const { startX = 0, startY = 0, endX = this._imageWidth, endY = this._imageHeight } = this.getChunkInterval();
-         this._currentChunk++;
+      for (let chunkIndex = 0; chunkIndex < this._chunks; chunkIndex++) {
+         const {
+            startX = 0,
+            startY = 0,
+            endX = this._imageWidth,
+            endY = this._imageHeight
+         } = this.getChunkInterval(chunkIndex);
 
-         this._workers[i % this._threads].postMessage({
+         this._workers[chunkIndex % this._threads].postMessage({
             action: 'render',
             data: {
                x: startX,

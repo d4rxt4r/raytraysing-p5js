@@ -2,7 +2,6 @@ import { int } from 'utils/math.js';
 import { createCanvas } from 'utils/canvas.js';
 import { preloadTextures } from 'utils/image.js';
 import { createUserInterface } from 'utils/gui.js';
-import { TestSceneCamera, CornellBoxCamera } from 'scenes';
 
 const ASPECT_RATIO = 16 / 9;
 const I_WIDTH = 128;
@@ -18,7 +17,7 @@ async function preload() {
 
 function setup() {
    Renderer = createCanvas(I_WIDTH, I_HEIGHT);
-   GUI = createUserInterface(CornellBoxCamera, {
+   GUI = createUserInterface(Renderer, {
       render,
       fullRender: fullSizeRender
    });

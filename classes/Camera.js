@@ -1,8 +1,7 @@
-import { deg2rad } from 'utils/math.js';
-import { getPixelIndex, setImagePixel } from 'utils/image.js';
-import { Vector, vec3, randVec3InNormDisk } from 'utils/vector.js';
-import Interval from 'classes/Interval.js';
-import Ray from 'classes/Ray.js';
+import { deg2rad } from '../utils/math.js';
+import { Vector, vec3, randVec3InNormDisk } from '../utils/vector.js';
+import Interval from './Interval.js';
+import Ray from './Ray.js';
 
 const { add, sub, mul, normalize, cross, scale, dot } = Vector;
 
@@ -14,6 +13,10 @@ class HitRecord {
       this.p = point;
       this.normal = normal;
       this.t = t;
+      this.u;
+      this.v;
+      this.frontFace;
+      this.normal;
       this.mat = null;
    }
 
@@ -24,19 +27,19 @@ class HitRecord {
 }
 
 export default class Camera {
-   constructor(iw, ih) {
+   constructor(iw = 100, ih = 100, settings = {}) {
       this.imageWidth = iw;
       this.imageHeight = ih;
-      this.scene = null;
 
-      this.maxDepth = 20;
-      this.spp = 30;
-      this.defocusAngle = 0;
-      this.focusDist = 1;
-      this.vFov = 90;
-      this.lookFrom = vec3(0, 0, 0);
-      this.lookAt = vec3(0, 0, -1);
-      this.vUp = vec3(0, 1, 0);
+      this.maxDepth = settings.maxDepth || 20;
+      this.spp = settings.spp || 30;
+      this.defocusAngle = settings.defocusAngle || 0;
+      this.focusDist = settings.focusDist || 1;
+      this.vFov = settings.vFov || 90;
+      this.lookFrom = settings.lookFrom || vec3(0, 0, 0);
+      this.lookAt = settings.lookAt || vec3(0, 0, -1);
+      this.vUp = settings.vUp || vec3(0, 1, 0);
+      this.background = settings.background || vec3(0.7, 0.8, 1.0);
    }
 
    init() {
@@ -91,44 +94,41 @@ export default class Camera {
       return new Ray(rayOrigin, rayDirection);
    }
 
-   getRayColor(r, depth) {
+   getRayColor(scene, ray, depth) {
       if (depth <= 0) {
          return BLACK_CLR;
       }
 
       const hitRec = new HitRecord();
-      if (this.scene.hit(r, DT, hitRec)) {
-         const { scatter, attenuation, scattered } = hitRec.mat.scatter(r, hitRec);
-         if (scatter) {
-            return mul(attenuation, this.getRayColor(scattered, depth - 1));
-         }
-         return BLACK_CLR;
+
+      if (!scene.hit(ray, DT, hitRec)) {
+         return this.background;
       }
 
-      const a = 0.5 * (normalize(r.direction).y + 1.0);
-      // same as add3(mul3(vec3(1, 1, 1), 1 - a), mul3(vec3(0.5, 0.7, 1), a));
-      return vec3(1.0 - a + a * 0.5, 1.0 - a + a * 0.7, 1);
+      const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
+      const colorFromEmission = hitRec.mat.emitted(hitRec.u, hitRec.v, hitRec.p);
+
+      if (!scatter) {
+         return colorFromEmission;
+      }
+
+      const colorFromScatter = mul(attenuation, this.getRayColor(scene, scattered, depth - 1));
+
+      return add(colorFromEmission, colorFromScatter);
    }
 
-   render(frameBuffer, chunkInterval) {
-      // const worker = new Worker('render.worker.js');
-      // worker.onmessage = function(msg) {
-      //    console.warn('Message from worker', msg.data);
-      // }
-
-      const { startX = 0, startY = 0, endX = this.imageWidth, endY = this.imageHeight } = chunkInterval;
-
-      for (let j = startY; j < endY; j++) {
-         for (let i = startX; i < endX; i++) {
-            let pixelColor = vec3(0, 0, 0);
-
-            for (let sample = 0; sample < this.spp; sample++) {
-               const ray = this.getRay(i, j);
-               pixelColor = add(pixelColor, this.getRayColor(ray, this.maxDepth));
-            }
-
-            setImagePixel(frameBuffer, i, j, this.imageWidth, scale(pixelColor, this.pixelSamplesScale));
-         }
+   render(scene, x, y) {
+      // fixme: camera must be preinitialized
+      if (!this._pixel00Loc) {
+         this.init();
       }
+
+      let pixelColor = BLACK_CLR;
+      for (let sample = 0; sample < this.spp; sample++) {
+         const ray = this.getRay(x, y);
+         pixelColor = add(pixelColor, this.getRayColor(scene, ray, this.maxDepth));
+      }
+
+      return scale(pixelColor, this.pixelSamplesScale);
    }
 }

@@ -1,4 +1,4 @@
-import { randomDouble } from 'utils/math.js';
+import { randomDouble } from './math.js';
 
 const EPS = 1e-8;
 
@@ -63,30 +63,15 @@ class Vector {
       return this.x;
    }
 
-   static checkInputs(...values) {
-      values.forEach((value) => {
-         if (!value instanceof Vector) {
-            throw new Error('Wrong type!');
-         }
-
-         if (isNaN(value.x) || isNaN(value.y) || isNaN(value.z)) {
-            throw new Error('NaN values provided!');
-         }
-      });
-   }
-
    static add(vec1, vec2) {
-      // Vector.checkInputs(vec1, vec2);
       return new Vector(vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z);
    }
 
    static sub(vec1, vec2) {
-      // Vector.checkInputs(vec1, vec2);
       return new Vector(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z);
    }
 
    static mul(vec1, vec2) {
-      // Vector.checkInputs(vec1, vec2);
       return new Vector(vec1.x * vec2.x, vec1.y * vec2.y, vec1.z * vec2.z);
    }
 
@@ -95,7 +80,6 @@ class Vector {
    }
 
    static div(vec1, vec2) {
-      // Vector.checkInputs(vec1, vec2);
       return new Vector(vec1.x / vec2.x, vec1.y / vec2.y, vec1.z / vec2.z);
    }
 
@@ -113,7 +97,6 @@ class Vector {
    }
 
    static dot(vec1, vec2) {
-      // Vector.checkInputs(vec1, vec2);
       return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
    }
 

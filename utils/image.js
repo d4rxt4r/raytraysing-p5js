@@ -1,5 +1,57 @@
-import { vec3, randVec3 } from 'utils/vector.js';
-import Interval from 'classes/Interval.js';
+import { vec3, randVec3 } from './vector.js';
+import { int } from './math.js';
+import Interval from '../classes/Interval.js';
+
+const FULL_RES = 1200;
+const LOW_RES = 128;
+const ASPECT_RATIO = 1 / 1;
+function getHeight(w) {
+   return int(w / ASPECT_RATIO) < 1 ? 1 : int(w / ASPECT_RATIO);
+}
+
+class UserImage {
+   constructor(imageData) {
+      this._imageData = imageData;
+   }
+
+   get width() {
+      return this._imageData.width;
+   }
+
+   get height() {
+      return this._imageData.height;
+   }
+
+   get pixels() {
+      return this._imageData.data;
+   }
+
+   static async load(path, ctx) {
+      return new Promise((resolve) => {
+         const image = new Image();
+         image.onload = () => {
+            ctx.canvas.width = image.width;
+            ctx.canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+            resolve(new UserImage(ctx.getImageData(0, 0, image.width, image.height)));
+         };
+
+         image.src = path;
+      });
+   }
+}
+
+const TEX_PATHS = ['earthmap.jpg'];
+const LOADED_TEX = [];
+
+async function preloadTextures() {
+   const canvas = new OffscreenCanvas(1, 1);
+   const ctx = canvas.getContext('2d');
+
+   for (const path of TEX_PATHS) {
+      LOADED_TEX.push(await UserImage.load(path, ctx));
+   }
+}
 
 function getPixelIndex(x, y, w) {
    return (y * w + x) * 4;
@@ -43,4 +95,16 @@ function setImagePixel(imgPixels, x, y, w, color) {
    imgPixels[index + 3] = 255;
 }
 
-export { getPixelIndex, setImagePixel, averageColorComponent, averageColors, randomColor };
+export {
+   LOADED_TEX,
+   FULL_RES,
+   LOW_RES,
+   UserImage,
+   getHeight,
+   preloadTextures,
+   getPixelIndex,
+   setImagePixel,
+   averageColorComponent,
+   averageColors,
+   randomColor
+};

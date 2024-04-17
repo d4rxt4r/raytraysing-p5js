@@ -9,7 +9,16 @@ References:
 -  [dat.gui.js](https://github.com/dataarts/dat.gui/tree/master)
 -  [Ray Tracing in One Weekend](https://raytracing.github.io/)
 
+FIXME
+
+-  [ ] GUI
+-  [ ] Texture Loading
+
 TODO
 
 -  [ ] Scene select
--  [ ] Fix Gui
+-  [ ] Motion Blur
+-  [ ] Perlin Noise
+-  [ ] Quadrilaterals
+-  [ ] Box Object
+-  [ ] Volumes

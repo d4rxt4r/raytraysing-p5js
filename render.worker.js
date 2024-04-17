@@ -1,5 +1,9 @@
+// Ensure that Math.random gives same output on all workers
+import { alea } from './lib/alea.min.js';
+Math.random = alea;
+
 import RCamera from './classes/Camera.js';
-import { TestScene, TestSceneCamera, DemoScene } from './scenes.js';
+import { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera } from './scenes.js';
 
 let Scene;
 let Camera;
@@ -15,10 +19,10 @@ onmessage = (e) => {
    }
 
    if (action === 'initCamera') {
-      Camera = new RCamera(camera.imageWidth, camera.imageHeight, TestSceneCamera);
+      Camera = new RCamera(camera.imageWidth, camera.imageHeight, DemoSceneCamera);
 
       if (!Scene) {
-         Scene = new TestScene();
+         Scene = new DemoScene();
       }
 
       return;

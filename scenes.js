@@ -89,7 +89,7 @@ const TestSceneCamera = {
    vFov: 15,
    defocusAngle: 1,
    focusDist: 8,
-   background: vec3(0.00, 0.01, 0.01)
+   background: vec3(0.0, 0.01, 0.01)
 };
 
 export { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera };

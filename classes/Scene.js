@@ -1,7 +1,16 @@
 import { vec3 } from '../utils/vector.js';
-import { Hittable } from './Objects.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
+
+export class Hittable {
+   hit(ray, rayT, hitRec) {
+      throw new Error('Not implemented');
+   }
+
+   get boundingBox() {
+      return this._boundingBox;
+   }
+}
 
 export class HittableList extends Hittable {
    constructor(object) {

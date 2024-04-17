@@ -2,7 +2,7 @@ import { Vector, vec3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
 import { randomColor, LOADED_TEX } from './utils/image.js';
 import { HittableList } from './classes/Scene.js';
-import { BHVNode, Sphere } from './classes/Objects.js';
+import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture } from './classes/Texture.js';
 
@@ -71,25 +71,116 @@ function TestScene() {
    scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
    const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
    scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
-   scene.add(new Sphere(vec3(0.7, 0, -1), 0.5, new Dielectric(1.5)));
-   scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-0.4, -0.7, -0.9), 0.5, new DiffusedLight(vec3(1, 5, 2))));
-   // scene.add(new Sphere(vec3(-0.3, 0.3, -1), 0.1, new DiffusedLight(vec3(10, 8, 7))));
-   // scene.add(new Sphere(vec3(-0.3, 0.5, -1), 0.2, new Diffuse(new ImageTexture(LOADED_TEX[0]))));
-   scene.add(new Sphere(vec3(-0.8, 0.2, -0.8), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1.5)));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.3, new Dielectric(1 / 1.5)));
+   scene.add(new Sphere(vec3(-0.8, -0.15, -0.5), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
 
 const TestSceneCamera = {
    lookFrom: vec3(0, 2, -8),
-   lookAt: vec3(0, 0, 0),
+   lookAt: vec3(0, -0.1, 0),
    spp: 200,
    maxDepth: 50,
-   vFov: 15,
-   defocusAngle: 1,
+   vFov: 12,
+   defocusAngle: 0.4,
    focusDist: 8,
-   background: vec3(0.0, 0.01, 0.01)
+   background: vec3(0.7, 0.8, 1.001)
 };
 
-export { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera };
+function QuadsScene() {
+   const scene = new HittableList();
+
+   scene.add(new Quad(vec3(-3, -2, 5), vec3(0, 0, -4), vec3(0, 4, 0), new Diffuse(vec3(1.0, 0.2, 0.2))));
+   scene.add(new Quad(vec3(-2, -2, 0), vec3(4, 0, 0), vec3(0, 4, 0), new Diffuse(vec3(0.2, 1.0, 0.2))));
+   scene.add(new Quad(vec3(3, -2, 1), vec3(0, 0, 4), vec3(0, 4, 0), new Diffuse(vec3(0.2, 0.2, 1.0))));
+   scene.add(new Quad(vec3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), new Diffuse(vec3(1.0, 0.5, 0.0))));
+   scene.add(new Quad(vec3(-2, -3, 5), vec3(4, 0, 0), vec3(0, 0, -4), new Diffuse(vec3(0.2, 0.8, 0.8))));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+const QuadsSceneCamera = {
+   spp: 100,
+   maxDepth: 50,
+   vFov: 80,
+   lookFrom: vec3(0, 0, 9),
+   lookAt: vec3(0, 0, 0),
+   vUp: vec3(0, 1, 0),
+   defocusAngle: 0
+};
+
+function DarkScene() {
+   const scene = new HittableList();
+
+   scene.add(
+      new Quad(
+         vec3(-25, 0, 25),
+         vec3(0, 0, -50),
+         vec3(50, 0, 0),
+         new Diffuse(new CheckerBoard(0.05, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9)))
+      )
+   );
+   scene.add(new Sphere(vec3(0, 1.5, 0), 1.5, new Metal(vec3(0.8, 0.8, 0.8), 0.1)));
+   scene.add(new Quad(vec3(-3, 0, -3), vec3(3, 0, 0), vec3(0, 3, 0), new DiffusedLight(vec3(7, 8, 10))));
+   // scene.add(new Sphere(vec3(0, 10, 0), 2, new DiffusedLight(vec3(10, 10, 10))));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+function CornellBox() {
+   const scene = new HittableList();
+
+   const red = new Diffuse(vec3(0.65, 0.05, 0.05));
+   const white = new Diffuse(vec3(0.73, 0.73, 0.73));
+   const green = new Diffuse(vec3(0.12, 0.45, 0.15));
+   const light = new DiffusedLight(vec3(15, 15, 15));
+
+   scene.add(new Quad(vec3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
+   scene.add(new Quad(vec3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
+   scene.add(new Quad(vec3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), light));
+   scene.add(new Quad(vec3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
+   scene.add(new Quad(vec3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
+   scene.add(new Quad(vec3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+
+   scene.add(new Box(vec3(130, 0, 65), vec3(295, 165, 230), white));
+   scene.add(new Box(vec3(265, 0, 295), vec3(430, 330, 460), white));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+const CornellBoxCamera = {
+   spp: 50,
+   maxDepth: 50,
+   background: vec3(0, 0, 0),
+   vFov: 40,
+   lookFrom: vec3(278, 278, -800),
+   lookAt: vec3(278, 278, 0),
+   vUp: vec3(0, 1, 0),
+   defocusAngle: 0
+};
+
+const DarkSceneCamera = {
+   lookFrom: vec3(26, 3, 6),
+   lookAt: vec3(0, 2, 0),
+   spp: 1000,
+   maxDepth: 200,
+   vFov: 15,
+   defocusAngle: 0,
+   focusDist: 6,
+   background: vec3(0, 0, 0)
+};
+
+export {
+   TestScene,
+   TestSceneCamera,
+   DemoScene,
+   DemoSceneCamera,
+   DarkScene,
+   DarkSceneCamera,
+   QuadsScene,
+   QuadsSceneCamera,
+   CornellBox,
+   CornellBoxCamera
+};

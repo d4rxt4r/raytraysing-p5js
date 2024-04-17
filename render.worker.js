@@ -3,7 +3,18 @@ import { alea } from './lib/alea.min.js';
 Math.random = alea;
 
 import RCamera from './classes/Camera.js';
-import { TestScene, TestSceneCamera, DemoScene, DemoSceneCamera } from './scenes.js';
+import {
+   TestScene,
+   TestSceneCamera,
+   DemoScene,
+   DemoSceneCamera,
+   DarkScene,
+   DarkSceneCamera,
+   QuadsScene,
+   QuadsSceneCamera,
+   CornellBox,
+   CornellBoxCamera
+} from './scenes.js';
 
 let Scene;
 let Camera;
@@ -19,10 +30,10 @@ onmessage = (e) => {
    }
 
    if (action === 'initCamera') {
-      Camera = new RCamera(camera.imageWidth, camera.imageHeight, DemoSceneCamera);
+      Camera = new RCamera(camera.imageWidth, camera.imageHeight, CornellBoxCamera);
 
       if (!Scene) {
-         Scene = new DemoScene();
+         Scene = CornellBox();
       }
 
       return;

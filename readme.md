@@ -21,4 +21,6 @@ TODO
 -  [ ] Perlin Noise
 -  [ ] Quadrilaterals
 -  [ ] Box Object
+-  [ ] Additional 2D Primitives
 -  [ ] Volumes
+-  [ ] Scene editor

@@ -38,7 +38,7 @@ export default class Interval {
 
    expand(delta) {
       const padding = delta / 2;
-      return new Interval(min - padding, max + padding);
+      return new Interval(this.min - padding, this.max + padding);
    }
 
    static minmax(a, b) {

@@ -1,7 +1,7 @@
 import { Vector, vec3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
 import { randomColor, LOADED_TEX } from './utils/image.js';
-import { HittableList } from './classes/Scene.js';
+import { HittableList, Translate } from './classes/Scene.js';
 import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture } from './classes/Texture.js';
@@ -74,7 +74,9 @@ function TestScene() {
 
    scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
    const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
-   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
+   const checkerSphere = new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker));
+   scene.add(new Translate(checkerSphere, vec3(-0.05, 0, 0)));
+
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.3, new Dielectric(1 / 1.5)));
    scene.add(new Sphere(vec3(-0.8, -0.15, -0.5), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));

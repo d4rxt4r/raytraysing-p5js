@@ -41,6 +41,10 @@ export default class Interval {
       return new Interval(this.min - padding, this.max + padding);
    }
 
+   static add(it, disp) {
+      return new Interval(it.min + disp, it.max + disp);
+   }
+
    static minmax(a, b) {
       return a <= b ? new Interval(a, b) : new Interval(b, a);
    }

@@ -11,7 +11,6 @@ References:
 
 FIXME
 
--  [ ] GUI
 -  [ ] Texture Loading
 
 TODO

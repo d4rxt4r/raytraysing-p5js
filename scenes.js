@@ -88,7 +88,7 @@ const TestSceneCamera = {
    spp: 20,
    maxDepth: 50,
    vFov: 12,
-   defocusAngle: 0.4,
+   defocusAngle: 1,
    focusDist: 8,
    background: vec3(0.7, 0.8, 1.001)
 };

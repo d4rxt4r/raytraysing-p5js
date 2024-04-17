@@ -1,8 +1,5 @@
 import { SCENE_NAMES, SCENE_LIST } from '../scenes.js';
 
-let camSpp;
-let camDepth;
-
 const defaultSettings = {
    scene: SCENE_NAMES[0],
    renderRes: 0.1,
@@ -34,9 +31,6 @@ function copySettingsFromCamera(camera, settings, Renderer) {
    settings.render = function () {
       Renderer.render();
    };
-   settings.renderFull = function () {
-      Renderer.renderFull();
-   };
 }
 
 function debounce(func, ms) {
@@ -46,34 +40,6 @@ function debounce(func, ms) {
       timeout = setTimeout(() => func.apply(this, arguments), ms);
    };
 }
-
-function _moveCameraView(camera, axis, val, callback) {
-   camera.spp = 1;
-   camera.maxDepth = 3;
-   camera.lookAt[axis] = val;
-   camera.init();
-   callback();
-}
-const moveCameraView = debounce(_moveCameraView, 100);
-
-function _restoreCameraSettings(camera, callback) {
-   camera.spp = camSpp;
-   camera.pixelSamplesScale = 1 / camSpp;
-   camera.maxDepth = camDepth;
-   camera.init();
-}
-const restoreCameraSettings = debounce(_restoreCameraSettings, 2000);
-
-function _moveCamera(camera, axis, val, callback) {
-   camera.spp = 1;
-   camera.maxDepth = 3;
-   camera.lookFrom[axis] = val;
-   camera.init();
-
-   callback();
-}
-
-const moveCamera = debounce(_moveCamera, 100);
 
 export function createUserInterface(Renderer) {
    copySettingsFromCamera(SCENE_LIST[defaultSettings.scene].camera, defaultSettings, Renderer);
@@ -106,9 +72,7 @@ export function createUserInterface(Renderer) {
       .max(1000)
       .step(1)
       .onFinishChange((spp) => {
-         camSpp = spp;
-         // cameraSettings.spp = spp;
-         // cameraSettings.init();
+         Renderer.setCameraSettings({ spp });
       });
    preview
       .add(defaultSettings, 'maxDepth')
@@ -116,9 +80,7 @@ export function createUserInterface(Renderer) {
       .max(100)
       .step(1)
       .onFinishChange((maxDepth) => {
-         camDepth = maxDepth;
-         // cameraSettings.maxDepth = maxDepth;
-         // cameraSettings.init();
+         Renderer.setCameraSettings({ maxDepth });
       });
    preview
       .add(defaultSettings, 'vFov')
@@ -126,8 +88,7 @@ export function createUserInterface(Renderer) {
       .max(120)
       .step(1)
       .onFinishChange((vFov) => {
-         // cameraSettings.vFov = vFov;
-         // cameraSettings.init();
+         Renderer.setCameraSettings({ vFov });
       });
 
    preview
@@ -136,8 +97,7 @@ export function createUserInterface(Renderer) {
       .max(100)
       .step(0.1)
       .onFinishChange((focusDist) => {
-         // cameraSettings.focusDist = focusDist;
-         // cameraSettings.init();
+         Renderer.setCameraSettings({ focusDist });
       });
    preview
       .add(defaultSettings, 'defocusAngle')
@@ -145,8 +105,7 @@ export function createUserInterface(Renderer) {
       .max(10)
       .step(0.001)
       .onFinishChange((defocusAngle) => {
-         // cameraSettings.defocusAngle = defocusAngle;
-         // cameraSettings.init();
+         Renderer.setCameraSettings({ defocusAngle });
       });
 
    preview
@@ -155,10 +114,10 @@ export function createUserInterface(Renderer) {
       .max(10)
       .step(0.01)
       .onChange((val) => {
-         // moveCameraView(cameraSettings, 'x', val, defaultSettings.render);
+         moveCamera('x', val);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
    preview
@@ -167,10 +126,10 @@ export function createUserInterface(Renderer) {
       .max(10)
       .step(0.01)
       .onChange((val) => {
-         // moveCameraView(cameraSettings, 'y', val, defaultSettings.render);
+         moveCamera('y', val);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
    preview
@@ -179,22 +138,23 @@ export function createUserInterface(Renderer) {
       .max(10)
       .step(0.01)
       .onChange((val) => {
-         // moveCameraView(cameraSettings, 'z', val, defaultSettings.render);
+         moveCamera('z', val);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
+   const moveCamera = debounce(Renderer.moveCamera.bind(Renderer), 100);
    preview
       .add(defaultSettings, 'posX')
       .min(-100)
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         // moveCamera(cameraSettings, 'x', val, defaultSettings.render);
+         moveCamera('x', val, true);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
    preview
@@ -203,10 +163,10 @@ export function createUserInterface(Renderer) {
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         // moveCamera(cameraSettings, 'y', val, defaultSettings.render);
+         moveCamera('y', val, true);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
    preview
@@ -215,14 +175,13 @@ export function createUserInterface(Renderer) {
       .max(100)
       .step(0.1)
       .onChange((val) => {
-         // moveCamera(cameraSettings, 'z', val, defaultSettings.render);
+         moveCamera('z', val, true);
       })
       .onFinishChange(() => {
-         // restoreCameraSettings(cameraSettings, defaultSettings.render);
+         Renderer.restoreCameraSettings();
       });
 
    GUI.add(defaultSettings, 'render');
-   GUI.add(defaultSettings, 'renderFull');
 
    return GUI;
 }

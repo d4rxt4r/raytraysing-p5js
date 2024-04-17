@@ -1,7 +1,15 @@
 import { vec3, randVec3 } from './vector.js';
+import { int } from './math.js';
 import Interval from '../classes/Interval.js';
 
-export class UserImage {
+const FULL_RES = 1200;
+const LOW_RES = 128;
+const ASPECT_RATIO = 1 / 1;
+function getHeight(w) {
+   return int(w / ASPECT_RATIO) < 1 ? 1 : int(w / ASPECT_RATIO);
+}
+
+class UserImage {
    constructor(imageData) {
       this._imageData = imageData;
    }
@@ -34,9 +42,9 @@ export class UserImage {
 }
 
 const TEX_PATHS = ['earthmap.jpg'];
-export const LOADED_TEX = [];
+const LOADED_TEX = [];
 
-export async function preloadTextures() {
+async function preloadTextures() {
    const canvas = new OffscreenCanvas(1, 1);
    const ctx = canvas.getContext('2d');
 
@@ -87,4 +95,16 @@ function setImagePixel(imgPixels, x, y, w, color) {
    imgPixels[index + 3] = 255;
 }
 
-export { getPixelIndex, setImagePixel, averageColorComponent, averageColors, randomColor };
+export {
+   LOADED_TEX,
+   FULL_RES,
+   LOW_RES,
+   UserImage,
+   getHeight,
+   preloadTextures,
+   getPixelIndex,
+   setImagePixel,
+   averageColorComponent,
+   averageColors,
+   randomColor
+};

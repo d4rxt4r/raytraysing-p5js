@@ -1,12 +1,5 @@
-import { int } from '../utils/math.js';
-import { setImagePixel } from '../utils/image.js';
+import { setImagePixel, FULL_RES, getHeight } from '../utils/image.js';
 import { calculateZoom } from '../utils/canvas.js';
-
-const FULL_RES = 1080;
-const ASPECT_RATIO = 1 / 1;
-function getHeight(w) {
-   return int(w / ASPECT_RATIO) < 1 ? 1 : int(w / ASPECT_RATIO);
-}
 
 export default class Renderer {
    constructor(canvas) {
@@ -28,26 +21,20 @@ export default class Renderer {
       this._chunkWidth = Math.floor(canvas.width / this._chunkCols);
       this._chunkHeight = Math.floor(canvas.height / this._chunkRows);
 
-      this._t0;
-
-      this.scene;
+      // this._t0;
+      // this._scene;
 
       this._initContext(canvas);
       this._initRenderWorkers();
       this._initImageData();
    }
 
-   resizeCanvas(w, h) {
-      this._workers.forEach((worker) => {
-         worker.postMessage({
-            action: 'settings',
-            settings: {
-               imageWidth: w,
-               imageHeight: h
-            }
-         });
-      });
+   get pixels() {
+      return this.imageData.data;
+   }
 
+   resizeCanvas(w, h) {
+      this.setCameraSettings({ imageWidth: w, imageHeight: h });
       this.canvas.width = w;
       this.canvas.height = h;
       this.canvas.style.zoom = calculateZoom(w);
@@ -65,23 +52,47 @@ export default class Renderer {
       this.resizeCanvas(FULL_RES * scale, getHeight(FULL_RES) * scale);
    }
 
-   setScene(scene) {
-      this._scene = scene;
-
+   setCameraSettings(settings) {
       this._workers.forEach((worker) => {
          worker.postMessage({
-            action: 'initScene',
-            scene: scene,
-            camera: {
-               imageWidth: this._imageWidth,
-               imageHeight: this._imageHeight
-            }
+            action: 'settings',
+            settings
          });
       });
    }
 
-   get pixels() {
-      return this.imageData.data;
+   setScene(scene) {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'initScene',
+            scene: scene
+         });
+      });
+   }
+
+   moveCamera(axis, val, pos = false) {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'moveCamera',
+            data: {
+               axis,
+               val,
+               pos
+            }
+         });
+      });
+
+      this.render();
+   }
+
+   restoreCameraSettings() {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'restoreCamera'
+         });
+      });
+
+      this.render();
    }
 
    _getChunkCoords(chunkIndex) {
@@ -115,9 +126,9 @@ export default class Renderer {
             setImagePixel(this.pixels, x, y, this.canvas.width, color);
             this.ctx.putImageData(this.imageData, 0, 0);
 
-            if (x === this._imageWidth - 1 && y === this._imageHeight - 1) {
-               console.info('ℹ️ Generation took: ' + (performance.now() - this._t0).toFixed(2) + 'ms');
-            }
+            // if (x === this._imageWidth - 1 && y === this._imageHeight - 1) {
+            //    console.info('ℹ️ Generation took: ' + (performance.now() - this._t0).toFixed(2) + 'ms');
+            // }
 
             if (y === endY && x === endX) {
                return;
@@ -145,7 +156,7 @@ export default class Renderer {
    }
 
    render() {
-      this._t0 = performance.now();
+      // this._t0 = performance.now();
 
       for (let chunkIndex = 0; chunkIndex < this._chunks; chunkIndex++) {
          const {
@@ -167,15 +178,5 @@ export default class Renderer {
             }
          });
       }
-   }
-
-   renderFull() {
-      this.resizeCanvas(FULL_RES, getHeight(FULL_RES));
-      // resize canvas & camera to full width
-      // start render
-      // revert size to original size, but only after render done
-      // const fWidth = window.innerWidth;
-      // const fHeight = int(fWidth / ASPECT_RATIO) < 1 ? 1 : int(fWidth / ASPECT_RATIO);
-      // Renderer.resizeCanvas(fWidth / 2, fHeight / 2);
    }
 }

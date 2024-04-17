@@ -27,7 +27,7 @@ class HitRecord {
 }
 
 export default class Camera {
-   constructor(iw, ih, settings = {}) {
+   constructor(iw = 100, ih = 100, settings = {}) {
       this.imageWidth = iw;
       this.imageHeight = ih;
 

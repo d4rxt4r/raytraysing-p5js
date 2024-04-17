@@ -1,10 +1,11 @@
-import { SCENE_LIST, SCENE_NAMES } from '../scenes.js';
+import { SCENE_NAMES, SCENE_LIST } from '../scenes.js';
 
 let camSpp;
 let camDepth;
 
 const defaultSettings = {
    scene: SCENE_NAMES[0],
+   renderRes: 0.1,
    spp: 20,
    maxDepth: 15,
    vFov: 30,
@@ -18,7 +19,7 @@ const defaultSettings = {
    posZ: 3
 };
 
-function copySettingsFromCamera(camera, settings, { render, fullRender }) {
+function copySettingsFromCamera(camera, settings, Renderer) {
    settings.spp = camera.spp ?? settings.spp;
    settings.maxDepth = camera.maxDepth ?? settings.maxDepth;
    settings.vFov = camera.vFov ?? settings.vFov;
@@ -31,10 +32,10 @@ function copySettingsFromCamera(camera, settings, { render, fullRender }) {
    settings.defocusAngle = camera.defocusAngle ?? settings.defocusAngle;
    settings.focusDist = camera.focusDist ?? settings.focusDist;
    settings.render = function () {
-      render();
+      Renderer.render();
    };
    settings.renderFull = function () {
-      fullRender();
+      Renderer.renderFull();
    };
 }
 
@@ -74,8 +75,10 @@ function _moveCamera(camera, axis, val, callback) {
 
 const moveCamera = debounce(_moveCamera, 100);
 
-export function createUserInterface(Renderer, { render, fullRender }) {
-   copySettingsFromCamera({}, defaultSettings, { render, fullRender });
+export function createUserInterface(Renderer) {
+   copySettingsFromCamera(SCENE_LIST[defaultSettings.scene].camera, defaultSettings, Renderer);
+
+   Renderer.setResolution(defaultSettings.renderRes);
    Renderer.setScene(defaultSettings.scene);
 
    const GUI = new dat.gui.GUI({ name: 'Render Setting' });
@@ -87,6 +90,16 @@ export function createUserInterface(Renderer, { render, fullRender }) {
 
    const preview = GUI.addFolder('Preview');
    preview.closed = false;
+
+   preview
+      .add(defaultSettings, 'renderRes')
+      .min(0.01)
+      .max(1)
+      .step(0.01)
+      .onFinishChange((renderRes) => {
+         Renderer.setResolution(renderRes);
+      });
+
    preview
       .add(defaultSettings, 'spp')
       .min(1)

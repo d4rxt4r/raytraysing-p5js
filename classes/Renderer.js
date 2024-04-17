@@ -1,11 +1,19 @@
+import { int } from '../utils/math.js';
 import { setImagePixel } from '../utils/image.js';
 import { calculateZoom } from '../utils/canvas.js';
+
+const FULL_RES = 1080;
+const ASPECT_RATIO = 1 / 1;
+function getHeight(w) {
+   return int(w / ASPECT_RATIO) < 1 ? 1 : int(w / ASPECT_RATIO);
+}
 
 export default class Renderer {
    constructor(canvas) {
       if (!canvas) {
          throw new Error('Canvas not provided!');
       }
+
       this._imageWidth = canvas.width;
       this._imageHeight = canvas.height;
 
@@ -30,6 +38,16 @@ export default class Renderer {
    }
 
    resizeCanvas(w, h) {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'settings',
+            settings: {
+               imageWidth: w,
+               imageHeight: h
+            }
+         });
+      });
+
       this.canvas.width = w;
       this.canvas.height = h;
       this.canvas.style.zoom = calculateZoom(w);
@@ -41,6 +59,10 @@ export default class Renderer {
       this._chunkHeight = Math.floor(this.canvas.height / this._chunkRows);
 
       this._initImageData();
+   }
+
+   setResolution(scale) {
+      this.resizeCanvas(FULL_RES * scale, getHeight(FULL_RES) * scale);
    }
 
    setScene(scene) {
@@ -62,15 +84,15 @@ export default class Renderer {
       return this.imageData.data;
    }
 
-   getChunkCoords(chunkIndex) {
+   _getChunkCoords(chunkIndex) {
       return {
          x: chunkIndex % this._chunkCols,
          y: Math.floor(chunkIndex / this._chunkCols)
       };
    }
 
-   getChunkInterval(chunkIndex) {
-      const { x, y } = this.getChunkCoords(chunkIndex);
+   _getChunkInterval(chunkIndex) {
+      const { x, y } = this._getChunkCoords(chunkIndex);
       return {
          startX: x * this._chunkWidth,
          startY: y * this._chunkHeight,
@@ -131,7 +153,7 @@ export default class Renderer {
             startY = 0,
             endX = this._imageWidth,
             endY = this._imageHeight
-         } = this.getChunkInterval(chunkIndex);
+         } = this._getChunkInterval(chunkIndex);
 
          this._workers[chunkIndex % this._threads].postMessage({
             action: 'render',
@@ -147,7 +169,13 @@ export default class Renderer {
       }
    }
 
-   createImageData() {
-      return this.ctx.createImageData(this.canvas.width, this.canvas.height);
+   renderFull() {
+      this.resizeCanvas(FULL_RES, getHeight(FULL_RES));
+      // resize canvas & camera to full width
+      // start render
+      // revert size to original size, but only after render done
+      // const fWidth = window.innerWidth;
+      // const fHeight = int(fWidth / ASPECT_RATIO) < 1 ? 1 : int(fWidth / ASPECT_RATIO);
+      // Renderer.resizeCanvas(fWidth / 2, fHeight / 2);
    }
 }

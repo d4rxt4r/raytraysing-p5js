@@ -3,11 +3,11 @@ import RCamera from './classes/Camera.js';
 
 let currentScene;
 let Scene;
-let Camera;
+let Camera = new RCamera();
 let pixelColor;
 
 onmessage = (e) => {
-   const { action, scene, camera, data } = e.data;
+   const { action, scene, data, settings } = e.data;
 
    if (action === 'render') {
       pixelColor = Camera.render(Scene, data.x, data.y);
@@ -17,7 +17,16 @@ onmessage = (e) => {
    if (action === 'initScene') {
       currentScene = scene;
       Scene = SCENE_LIST[scene].scene();
-      Camera = new RCamera(camera.imageWidth, camera.imageHeight, SCENE_LIST[scene].camera);
+      Camera = new RCamera(Camera?.imageWidth, Camera?.imageHeight, SCENE_LIST[scene].camera);
+      return;
+   }
+
+   if (action === 'settings') {
+      for (const [setting, value] of Object.entries(settings)) {
+         Camera[setting] = value;
+      }
+
+      Camera.init();
       return;
    }
 };

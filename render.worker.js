@@ -20,20 +20,20 @@ let Scene;
 let Camera;
 let pixelColor;
 onmessage = (e) => {
-   const { action, camera, x, y } = e.data;
+   const { action, camera, data } = e.data;
 
    if (action === 'render') {
-      pixelColor = Camera.render(Scene, x, y);
-      postMessage({ x, y, color: pixelColor });
+      pixelColor = Camera.render(Scene, data.x, data.y);
+      postMessage({ ...data, color: pixelColor });
 
       return;
    }
 
    if (action === 'initCamera') {
-      Camera = new RCamera(camera.imageWidth, camera.imageHeight, CornellBoxCamera);
+      Camera = new RCamera(camera.imageWidth, camera.imageHeight, DarkSceneCamera);
 
       if (!Scene) {
-         Scene = CornellBox();
+         Scene = DarkScene();
       }
 
       return;

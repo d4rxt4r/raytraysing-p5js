@@ -108,7 +108,10 @@ class DiffusedLight extends Material {
       this._texture = new SolidColor(arg);
    }
 
-   emitted(u, v, p) {
+   emitted(hitRec, u, v, p) {
+      if (!hitRec.frontFace) {
+         return BLACK_CLR;
+      }
       return this._texture.value(u, v, p);
    }
 }

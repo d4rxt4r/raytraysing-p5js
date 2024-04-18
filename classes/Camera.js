@@ -106,7 +106,7 @@ export default class Camera {
       }
 
       const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
-      const colorFromEmission = hitRec.mat.emitted(hitRec.u, hitRec.v, hitRec.p);
+      const colorFromEmission = hitRec.mat.emitted(hitRec, hitRec.u, hitRec.v, hitRec.p);
 
       if (!scatter) {
          return colorFromEmission;

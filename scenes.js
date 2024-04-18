@@ -9,8 +9,32 @@ import { alea } from './lib/alea.min.js';
 
 const { sub } = Vector;
 
+function TestScene() {
+   const scene = new HittableList();
+
+   scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
+   const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
+   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1.5)));
+   scene.add(new Sphere(vec3(0.7, 0, -1), 0.3, new Dielectric(1 / 1.5)));
+   scene.add(new Sphere(vec3(-0.8, -0.15, -0.5), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+const TestSceneCamera = {
+   lookFrom: vec3(0, 2, -8),
+   lookAt: vec3(0, -0.1, 0),
+   spp: 20,
+   maxDepth: 50,
+   vFov: 12,
+   defocusAngle: 1,
+   focusDist: 8,
+   background: vec3(0.7, 0.8, 1)
+};
+
 function DemoScene(camera) {
-   // Use alea alg to Ensure that Math.random gives same output across all workers
+   // Use alea alg to e nsure that Math.random gives same output across all workers
    Math.random = alea;
 
    const scene = new HittableList();
@@ -69,30 +93,6 @@ const DemoSceneCamera = {
    focusDist: 10
 };
 
-function TestScene() {
-   const scene = new HittableList();
-
-   scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
-   const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
-   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
-   scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1.5)));
-   scene.add(new Sphere(vec3(0.7, 0, -1), 0.3, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-0.8, -0.15, -0.5), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
-
-   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
-}
-
-const TestSceneCamera = {
-   lookFrom: vec3(0, 2, -8),
-   lookAt: vec3(0, -0.1, 0),
-   spp: 20,
-   maxDepth: 50,
-   vFov: 12,
-   defocusAngle: 1,
-   focusDist: 8,
-   background: vec3(0.7, 0.8, 1.001)
-};
-
 function QuadsScene() {
    const scene = new HittableList();
 
@@ -128,9 +128,27 @@ function DarkScene() {
    );
    scene.add(new Sphere(vec3(0, 1.5, 0), 1.5, new Metal(vec3(0.8, 0.8, 0.8), 0.1)));
    scene.add(new Quad(vec3(-3, 0, -3), vec3(3, 0, 0), vec3(0, 3, 0), new DiffusedLight(vec3(7, 8, 10))));
-   // scene.add(new Sphere(vec3(0, 10, 0), 2, new DiffusedLight(vec3(10, 10, 10))));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+function EarthScene() {
+   const scene = new HittableList();
+
+   scene.add(new Sphere(vec3(0, 0, 0), 2, new Diffuse(new ImageTexture(LOADED_TEX[0]))));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+const EarthSceneCamera = {
+   spp: 100,
+   maxDepth: 50,
+   vFov: 20,
+   lookFrom: vec3(0, 0, 12),
+   lookAt: vec3(0, 0, 0),
+   vUp: vec3(0, 1, 0),
+   defocusAngle: 0,
+
 }
 
 function CornellBox() {
@@ -176,7 +194,7 @@ const DarkSceneCamera = {
    background: vec3(0, 0, 0)
 };
 
-const SCENE_NAMES = ['Test Scene', 'Spheres', 'Quads', 'Dark', 'Cornell Box'];
+const SCENE_NAMES = ['Test Scene', 'Spheres', 'Quads', 'Dark', 'Earth', 'Cornell Box'];
 const SCENE_LIST = {
    'Test Scene': {
       scene: TestScene,
@@ -193,6 +211,10 @@ const SCENE_LIST = {
    Dark: {
       scene: DarkScene,
       camera: DarkSceneCamera
+   },
+   Earth: {
+      scene: EarthScene,
+      camera: EarthSceneCamera
    },
    'Cornell Box': {
       scene: CornellBox,

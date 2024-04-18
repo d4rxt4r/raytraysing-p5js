@@ -5,8 +5,10 @@ import Interval from '../classes/Interval.js';
 const FULL_RES = 1200;
 const LOW_RES = 128;
 const ASPECT_RATIO = 1 / 1;
+
 function getHeight(w) {
-   return int(w / ASPECT_RATIO) < 1 ? 1 : int(w / ASPECT_RATIO);
+   const height = int(w / ASPECT_RATIO);
+   return height || 1;
 }
 
 class UserImage {
@@ -51,6 +53,12 @@ async function preloadTextures() {
    for (const path of TEX_PATHS) {
       LOADED_TEX.push(await UserImage.load(path, ctx));
    }
+
+   return LOADED_TEX;
+}
+
+function isTexturesLoaded() {
+   return TEX_PATHS.length === LOADED_TEX.length;
 }
 
 function getPixelIndex(x, y, w) {
@@ -102,6 +110,7 @@ export {
    UserImage,
    getHeight,
    preloadTextures,
+   isTexturesLoaded,
    getPixelIndex,
    setImagePixel,
    averageColorComponent,

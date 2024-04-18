@@ -70,6 +70,15 @@ export default class Renderer {
       });
    }
 
+   setTextures(textures) {
+      this._workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'setTextures',
+            textures: textures
+         });
+      })
+   }
+
    moveCamera(axis, val, pos = false) {
       this._workers.forEach((worker) => {
          worker.postMessage({

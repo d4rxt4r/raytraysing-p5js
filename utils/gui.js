@@ -54,7 +54,7 @@ export function createUserInterface(Renderer) {
       Renderer.setScene(scene);
    });
 
-   const preview = GUI.addFolder('Preview');
+   const preview = GUI.addFolder('Camera');
    preview.closed = false;
 
    preview
@@ -182,6 +182,8 @@ export function createUserInterface(Renderer) {
       });
 
    GUI.add(defaultSettings, 'render');
+
+   Renderer.render();
 
    return GUI;
 }

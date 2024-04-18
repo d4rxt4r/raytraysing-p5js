@@ -48,6 +48,7 @@ class CheckerBoard extends Texture {
 class ImageTexture extends Texture {
    constructor(image) {
       super();
+
       this._image = image;
    }
 
@@ -62,7 +63,7 @@ class ImageTexture extends Texture {
       const i = int(u * this._image.width);
       const j = int(v * this._image.height);
       const rIndex = getPixelIndex(i, j, this._image.width);
-      const pixel = [this._image.data[rIndex], this._image.data[rIndex + 1], this._image.data[rIndex + 2]];
+      const pixel = [this._image.pixels[rIndex], this._image.pixels[rIndex + 1], this._image.pixels[rIndex + 2]];
 
       const colorScale = 1.0 / 255;
       return vec3(colorScale * pixel[0], colorScale * pixel[1], colorScale * pixel[2]);

@@ -1,29 +1,47 @@
 import { SCENE_LIST } from './scenes.js';
-import { LOW_RES, getHeight } from './utils/image.js';
+import { LOADED_TEX, LOW_RES, getHeight, UserImage } from './utils/image.js';
 import RCamera from './classes/Camera.js';
 
 let currentScene;
 let Scene;
-let Camera = new RCamera();
 let pixelColor;
+let Camera = new RCamera();
+
 let originalSpp;
 let originalDepth;
 let originalWidth;
 let originalHeight;
 
+function saveCameraSettings(Camera) {
+   originalSpp = Camera.spp;
+   originalDepth = Camera.maxDepth;
+   originalWidth = Camera.imageWidth;
+   originalHeight = Camera.imageHeight;
+}
+
+function restoreCameraSettings(Camera) {
+   Camera.spp = originalSpp;
+   Camera.maxDepth = originalDepth;
+   Camera.imageWidth = originalWidth;
+   Camera.imageHeight = originalHeight;
+}
+
 onmessage = (e) => {
-   const { action, scene, data, settings } = e.data;
+   const { action, scene, data, settings, textures } = e.data;
 
    if (action === 'render') {
       pixelColor = Camera.render(Scene, data.x, data.y);
       return postMessage({ ...data, color: pixelColor });
    }
 
+   if (action === 'setTextures') {
+      for (const texture of textures) {
+         LOADED_TEX.push(new UserImage(texture._imageData));
+      }
+   }
+
    if (action === 'restoreCamera') {
-      Camera.spp = originalSpp;
-      Camera.maxDepth = originalDepth;
-      Camera.imageWidth = originalWidth;
-      Camera.imageHeight = originalHeight;
+      restoreCameraSettings(Camera);
       Camera.init();
       return;
    }
@@ -43,11 +61,7 @@ onmessage = (e) => {
       Scene = SCENE_LIST[scene].scene();
       Camera = new RCamera(Camera?.imageWidth, Camera?.imageHeight, SCENE_LIST[scene].camera);
 
-      originalSpp = Camera.spp;
-      originalDepth = Camera.maxDepth;
-      originalWidth = Camera.imageWidth;
-      originalHeight = Camera.imageHeight;
-
+      saveCameraSettings(Camera);
       return;
    }
 
@@ -56,11 +70,7 @@ onmessage = (e) => {
          Camera[setting] = value;
       }
 
-      originalSpp = Camera.spp;
-      originalDepth = Camera.maxDepth;
-      originalWidth = Camera.imageWidth;
-      originalHeight = Camera.imageHeight;
-
+      saveCameraSettings(Camera);
       Camera.init();
       return;
    }

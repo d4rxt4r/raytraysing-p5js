@@ -14,5 +14,6 @@ TODO
 -  [ ] Motion Blur
 -  [ ] Additional 2D Primitives
 -  [ ] Volumes
--  [ ] Rewrite classes in es6 style 
+-  [ ] Rewrite classes in es6 style
+-  [ ] Rewiew code for optimizations
 -  [ ] Scene editor

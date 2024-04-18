@@ -1,7 +1,7 @@
 import { int, randomInt } from '../utils/math.js';
 import { Vector, vec3, randVec3 } from '../utils/vector.js';
 
-const { dot, normalize } = Vector;
+const { scale, dot, normalize } = Vector;
 
 
 export default class Perlin {
@@ -40,6 +40,20 @@ export default class Perlin {
                     ];
 
         return this.#perlinInterp(c, u, v, w);
+    }
+
+    turb(p, depth) {
+        let tempP = p;
+        let weight = 1;
+        let accum = 0;
+
+        for (let i = 0; i < depth; i++) {
+            accum += weight * this.noise(tempP);
+            weight *= 0.5;
+            tempP = scale(tempP, 2);
+        }
+
+        return Math.abs(accum);
     }
 
     #perlinInterp(c, u, v, w) {

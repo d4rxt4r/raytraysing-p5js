@@ -72,19 +72,29 @@ class ImageTexture extends Texture {
 }
 
 class NoiseTexture extends Texture {
-   #perlin;
-   #scale;
+   $scale;
+   $perlin;
 
    constructor(scale = 1) {
       super();
 
-      this.#perlin = new Perlin();
-      this.#scale = scale;
+      this.$perlin = new Perlin();
+      this.$scale = scale;
    }
 
    value(u, v, p) {
-      return Vector.scale(vec3(0.5, 0.5, 0.5), 1 + this.#perlin.noise(Vector.scale(p, this.#scale)));
+      return Vector.scale(vec3(0.5, 0.5, 0.5), 1 + this.$perlin.noise(Vector.scale(p, this.$scale)));
    }
 }
 
-export { Texture, SolidColor, CheckerBoard, ImageTexture, NoiseTexture };
+class MarbleTexture extends NoiseTexture {
+   constructor(scale) {
+      super(scale);
+   }
+
+   value(u, v, p) {
+      return Vector.scale(vec3(.5, .5, .5), 1 + Math.sin(this.$scale * p.z + 10 * this.$perlin.turb(p, 7)));
+   }
+}
+
+export { Texture, SolidColor, CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture };

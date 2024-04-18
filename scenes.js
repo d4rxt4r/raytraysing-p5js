@@ -4,7 +4,7 @@ import { randomColor, LOADED_TEX } from './utils/image.js';
 import { HittableList } from './classes/Scene.js';
 import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
-import { CheckerBoard, ImageTexture, NoiseTexture } from './classes/Texture.js';
+import { CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture } from './classes/Texture.js';
 import { alea } from './lib/alea.min.js';
 
 const { sub } = Vector;
@@ -168,8 +168,9 @@ function PerlinScene() {
 
    const scene = new HittableList();
    const noiseTex = new NoiseTexture(4);
+   const turbTex = new MarbleTexture(3);
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(noiseTex)));
-   scene.add(new Sphere(vec3(0, 2, 0), 2, new Diffuse(noiseTex)));
+   scene.add(new Sphere(vec3(0, 2, 0), 2, new Diffuse(turbTex)));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
@@ -177,9 +178,9 @@ function PerlinScene() {
 const PerlinScenCamera = {
    spp: 100,
    maxDepth: 50,
-   vFov: 25,
-   lookFrom: vec3(13, 2, 3),
-   lookAt: vec3(0, 0, 0),
+   vFov: 30,
+   lookFrom: vec3(13, 4, 3),
+   lookAt: vec3(0, 1, 0),
    vUp: vec3(0, 1, 0),
    defocusAngle: 0
 }

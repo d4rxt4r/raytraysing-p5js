@@ -11,11 +11,8 @@ References:
 
 TODO
 
--  [ ] Scene select
 -  [ ] Motion Blur
--  [ ] Perlin Noise
--  [ ] Quadrilaterals
--  [ ] Box Object
 -  [ ] Additional 2D Primitives
 -  [ ] Volumes
+-  [ ] Rewrite classes in es6 style 
 -  [ ] Scene editor

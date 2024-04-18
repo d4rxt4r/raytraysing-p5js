@@ -1,6 +1,7 @@
-import { vec3 } from '../utils/vector.js';
+import { Vector, vec3 } from '../utils/vector.js';
 import { int } from '../utils/math.js';
 import { getPixelIndex } from '../utils/image.js';
+import Perlin from './Perlin.js';
 import Interval from './Interval.js';
 
 export const BLACK_CLR = vec3(0, 0, 0);
@@ -70,4 +71,18 @@ class ImageTexture extends Texture {
    }
 }
 
-export { Texture, SolidColor, CheckerBoard, ImageTexture };
+class NoiseTexture extends Texture {
+   #perlin;
+
+   constructor() {
+      super();
+
+      this.#perlin = new Perlin();
+   }
+
+   value(u, v, p) {
+      return Vector.scale(vec3(1, 1, 1), this.#perlin.noise(p));
+   }
+}
+
+export { Texture, SolidColor, CheckerBoard, ImageTexture, NoiseTexture };

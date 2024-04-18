@@ -4,7 +4,7 @@ import Interval from '../classes/Interval.js';
 
 const FULL_RES = 1200;
 const LOW_RES = 128;
-const ASPECT_RATIO = 1 / 1;
+const ASPECT_RATIO = 16 / 9;
 
 function getHeight(w) {
    const height = int(w / ASPECT_RATIO);

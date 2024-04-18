@@ -167,7 +167,7 @@ function PerlinScene() {
    Math.random = alea;
 
    const scene = new HittableList();
-   const noiseTex = new NoiseTexture();
+   const noiseTex = new NoiseTexture(4);
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(noiseTex)));
    scene.add(new Sphere(vec3(0, 2, 0), 2, new Diffuse(noiseTex)));
 

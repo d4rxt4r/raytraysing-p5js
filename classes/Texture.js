@@ -73,15 +73,17 @@ class ImageTexture extends Texture {
 
 class NoiseTexture extends Texture {
    #perlin;
+   #scale;
 
-   constructor() {
+   constructor(scale = 1) {
       super();
 
       this.#perlin = new Perlin();
+      this.#scale = scale;
    }
 
    value(u, v, p) {
-      return Vector.scale(vec3(1, 1, 1), this.#perlin.noise(p));
+      return Vector.scale(vec3(0.5, 0.5, 0.5), 1 + this.#perlin.noise(Vector.scale(p, this.#scale)));
    }
 }
 

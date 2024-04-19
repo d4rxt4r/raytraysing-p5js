@@ -1,3 +1,4 @@
+import { alea } from './lib/alea.min.js';
 import { SCENE_LIST } from './scenes.js';
 import { LOADED_TEX, LOW_RES, getHeight, UserImage } from './utils/image.js';
 import RCamera from './classes/Camera.js';
@@ -57,6 +58,9 @@ onmessage = (e) => {
    }
 
    if (action === 'initScene') {
+      // Use same seed for random number generation across all workers
+      Math.random = alea(scene);
+
       currentScene = scene;
       Scene = SCENE_LIST[scene].scene();
       Camera = new RCamera(Camera?.imageWidth, Camera?.imageHeight, SCENE_LIST[scene].camera);

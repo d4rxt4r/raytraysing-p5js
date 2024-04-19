@@ -5,7 +5,6 @@ import { HittableList, Translate } from './classes/Scene.js';
 import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture } from './classes/Texture.js';
-import { alea } from './lib/alea.min.js';
 
 const { sub } = Vector;
 
@@ -34,9 +33,6 @@ const TestSceneCamera = {
 };
 
 function DemoScene(camera) {
-   // Use alea alg to e nsure that Math.random gives same output across all workers
-   Math.random = alea;
-
    const scene = new HittableList();
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(vec3(0.5, 0.5, 0.5))));
 
@@ -162,9 +158,6 @@ const EarthSceneCamera = {
 };
 
 function PerlinScene() {
-   // Use alea alg to e nsure that Math.random gives same output across all workers
-   Math.random = alea;
-
    const scene = new HittableList();
    const noiseTex = new NoiseTexture(4);
    const turbTex = new MarbleTexture(3);

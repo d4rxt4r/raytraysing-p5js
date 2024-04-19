@@ -43,7 +43,7 @@ class UserImage {
    }
 }
 
-const TEX_PATHS = ['earthmap.jpg'];
+const TEX_PATHS = ['../textures/earthmap.jpg'];
 const LOADED_TEX = [];
 
 async function preloadTextures() {

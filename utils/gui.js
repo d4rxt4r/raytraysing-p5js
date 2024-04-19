@@ -69,7 +69,7 @@ export function createUserInterface(Renderer) {
    preview
       .add(defaultSettings, 'spp')
       .min(1)
-      .max(1000)
+      .max(2000)
       .step(1)
       .onFinishChange((spp) => {
          Renderer.setCameraSettings({ spp });
@@ -77,7 +77,7 @@ export function createUserInterface(Renderer) {
    preview
       .add(defaultSettings, 'maxDepth')
       .min(1)
-      .max(100)
+      .max(200)
       .step(1)
       .onFinishChange((maxDepth) => {
          Renderer.setCameraSettings({ maxDepth });

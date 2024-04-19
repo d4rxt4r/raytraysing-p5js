@@ -19,9 +19,9 @@ export default class AABB {
          return this.#padToMinimums();
       }
 
-      this.x = args[0];
-      this.y = args[1];
-      this.z = args[2];
+      this.x = args[0] ?? new Interval();
+      this.y = args[1] ?? new Interval();
+      this.z = args[2] ?? new Interval();
 
       this.#padToMinimums();
    }
@@ -75,5 +75,9 @@ export default class AABB {
 
    static add(bBox, offset) {
       return new AABB(Interval.add(bBox.x, offset.x), Interval.add(bBox.y, offset.y), Interval.add(bBox.z, offset.z));
+   }
+
+   static universe() {
+      return new AABB(Interval.universe(), Interval.universe(), Interval.universe());
    }
 }

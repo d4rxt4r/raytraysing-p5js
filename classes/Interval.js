@@ -29,8 +29,8 @@ export default class Interval {
          return;
       }
 
-      this.min = args[0] ?? -Infinity;
-      this.max = args[1] ?? Infinity;
+      this.min = args[0] ?? +Infinity;
+      this.max = args[1] ?? -Infinity;
    }
 
    /**
@@ -92,5 +92,9 @@ export default class Interval {
 
    static minmax(a, b) {
       return a <= b ? new Interval(a, b) : new Interval(b, a);
+   }
+
+   static universe() {
+      return new Interval(-Infinity, Infinity);
    }
 }

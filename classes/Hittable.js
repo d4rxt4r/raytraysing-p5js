@@ -7,7 +7,7 @@ class Hittable {
    /**
     * @type {AABB}
     */
-   $boundingBox;
+   $boundingBox = new AABB();
 
    hit(ray, rayInt, hitRec) {
       throw new Error('Not implemented');

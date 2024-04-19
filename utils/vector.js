@@ -105,7 +105,7 @@ class Vector {
    }
 
    static mag(vec) {
-      return Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+      return Math.sqrt(Vector.magSq(vec));
    }
 
    static magSq(vec) {

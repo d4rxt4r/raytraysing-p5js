@@ -1,14 +1,14 @@
 import { Vector } from '../utils/vector.js';
 
 export default class HitRecord {
-   p;
-   normal;
-   mat;
-   frontFace;
-   t;
-   u;
-   v;
-   normal;
+   p = null;
+   normal = null;
+   mat = null;
+   frontFace = null;
+   t = null;
+   u = null;
+   v = null;
+   normal = null;
 
    setFaceNormal(ray, outwardNormal) {
       this.frontFace = Vector.dot(ray.direction, outwardNormal) < 0;

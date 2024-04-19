@@ -1,7 +1,8 @@
 import { Vector, vec3 } from '../utils/vector.js';
 import { color } from '../utils/image.js';
-import { Diffuse } from './Materials.js';
+import { Diffuse, Isotropic } from './Materials.js';
 import { Hittable, HittableList } from './Hittable.js';
+import HitRecord from './HitRecord.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
@@ -48,7 +49,7 @@ class Sphere extends Hittable {
    }
 
    #sphereCenter(time) {
-      return add(this.#center, scale(this.#centerVec, time));
+      return scale(this.#centerVec, time).add(this.#center);
    }
 
    hit(ray, rayInt, hitRec) {
@@ -181,4 +182,67 @@ class Box extends HittableList {
    }
 }
 
-export { Sphere, Quad, Box };
+class ConstantMedium extends Hittable {
+   #boundary;
+   #negInvDensity;
+   #phaseFunction;
+
+   constructor(boundary, density, tex) {
+      super();
+
+      this.#boundary = boundary;
+      this.#negInvDensity = -1 / density;
+      this.#phaseFunction = new Isotropic(tex);
+   }
+
+   get boundingBox() {
+      return this.#boundary.boundingBox;
+   }
+
+   hit(ray, rayInt, hitRec) {
+      const rec1 = new HitRecord();
+      const rec2 = new HitRecord();
+
+      if (!this.#boundary.hit(ray, Interval.universe(), rec1)) {
+         return false;
+      }
+
+      if (!this.#boundary.hit(ray, new Interval(rec1.t + 0.0001, Infinity), rec2)) {
+         return false;
+      }
+
+      if (rec1.t < rayInt.min) {
+         rec1.t = rayInt.min;
+      }
+
+      if (rec2.t > rayInt.max) {
+         rec2.t = rayInt.max;
+      }
+
+      if (rec1.t >= rec2.t) {
+         return false;
+      }
+
+      if (rec1.t < 0) {
+         rec1.t = 0;
+      }
+
+      const rayLength = ray.direction.mag();
+      const distanceInsideBoundary = (rec2.t - rec1.t) * rayLength;
+      const hitDistance = this.#negInvDensity * Math.log(Math.random());
+
+      if (hitDistance > distanceInsideBoundary) {
+         return false;
+      }
+
+      hitRec.t = rec1.t + hitDistance / rayLength;
+      hitRec.p = ray.at(hitRec.t);
+      hitRec.normal = vec3(1, 0, 0);
+      hitRec.frontFace = true;
+      hitRec.mat = this.#phaseFunction;
+
+      return true;
+   }
+}
+
+export { Sphere, Quad, Box, ConstantMedium };

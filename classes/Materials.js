@@ -12,7 +12,9 @@ class Material {
     * @param {HitRecord} hitRec
     */
    scatter(ray, hitRec) {
-      return false;
+      return {
+         scatter: false
+      };
    }
 
    /**
@@ -102,7 +104,7 @@ class Dielectric extends Material {
     */
    #refIndex;
 
-   constructor(refIndex) {
+   constructor(refIndex = 1) {
       super();
 
       this.#refIndex = refIndex;
@@ -151,10 +153,9 @@ class DiffusedLight extends Material {
 
       if (arg instanceof Texture) {
          this.#texture = arg;
-         return;
+      } else {
+         this.#texture = new SolidColor(arg);
       }
-
-      this.#texture = new SolidColor(arg);
    }
 
    /**
@@ -172,4 +173,29 @@ class DiffusedLight extends Material {
    }
 }
 
-export { Lambertian as Diffuse, Metal, Dielectric, DiffusedLight };
+class Isotropic extends Material {
+   /**
+    * @param {Texture|SolidColor}
+    */
+   #texture;
+
+   constructor(arg) {
+      super();
+
+      if (arg instanceof Texture) {
+         this.#texture = arg;
+      } else {
+         this.#texture = new SolidColor(arg);
+      }
+   }
+
+   scatter(rayIn, hitRec) {
+      return {
+         scatter: true,
+         scattered: new Ray(hitRec.p, Vector.randomNorm(), rayIn.time),
+         attenuation: this.#texture.value(hitRec.u, hitRec.v, hitRec.p)
+      };
+   }
+}
+
+export { Lambertian as Diffuse, Metal, Dielectric, DiffusedLight, Isotropic };

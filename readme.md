@@ -11,9 +11,8 @@ References:
 
 TODO
 
--  [ ] Motion Blur
+-  [ ] Track performance
+-  [ ] Implement workers queue
 -  [ ] Additional 2D Primitives
--  [ ] Volumes
 -  [ ] Rewrite classes in es6 style
--  [ ] Review code for optimizations
 -  [ ] Scene editor

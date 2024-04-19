@@ -266,6 +266,72 @@ const CornellBoxCamera = {
    defocusAngle: 0
 };
 
+function FinaleScene() {
+   const ground = new Diffuse(color(0.48, 0.83, 0.53));
+   const boxes1 = new HittableList();
+   const boxes_per_side = 20;
+   for (let i = 0; i < boxes_per_side; i++) {
+      for (let j = 0; j < boxes_per_side; j++) {
+         const w = 100.0;
+         const x0 = -1000.0 + i * w;
+         const z0 = -1000.0 + j * w;
+         const y0 = 0.0;
+         const x1 = x0 + w;
+         const y1 = randomDouble(1, 101);
+         const z1 = z0 + w;
+
+         boxes1.add(new Box(point3(x0, y0, z0), point3(x1, y1, z1), ground));
+      }
+   }
+
+   const scene = new HittableList();
+   scene.add(boxes1);
+
+   const light = new DiffusedLight(color(7, 7, 7));
+   scene.add(new Quad(point3(123, 554, 147), vec3(300, 0, 0), vec3(0, 0, 265), light));
+
+   const center1 = point3(400, 400, 200);
+   const center2 = vec3(30, 0, 0).add(center1);
+   const sphere_material = new Diffuse(color(0.7, 0.3, 0.1));
+   scene.add(new Sphere(center1, 50, sphere_material, center2));
+
+   scene.add(new Sphere(point3(260, 150, 45), 50, new Dielectric(1.5)));
+   scene.add(new Sphere(point3(0, 150, 145), 50, new Metal(color(0.8, 0.8, 0.9), 1.0)));
+
+   let boundary = new Sphere(point3(360, 150, 145), 70, new Dielectric(1.5));
+   scene.add(boundary);
+   scene.add(new ConstantMedium(boundary, 0.2, color(0.2, 0.4, 0.9)));
+   boundary = new Sphere(point3(0, 0, 0), 5000, new Dielectric(1.5));
+   scene.add(new ConstantMedium(boundary, 0.0001, color(1, 1, 1)));
+
+   const eMat = new Diffuse(new ImageTexture(LOADED_TEX[0]));
+   scene.add(new Sphere(point3(400, 200, 400), 100, eMat));
+   const perText = new NoiseTexture(0.2);
+   scene.add(new Sphere(point3(220, 280, 300), 80, new Diffuse(perText)));
+
+   const boxes2 = new HittableList();
+   const white = new Diffuse(color(0.73, 0.73, 0.73));
+   const ns = 1000;
+   for (let j = 0; j < ns; j++) {
+      boxes2.add(new Sphere(Math.random(0, 165), 10, white));
+   }
+
+   scene.add(new Translate(new RotateY(boxes2, 15), vec3(-100, 270, 395)));
+
+   return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
+}
+
+const FinaleSceneCamera = {
+   spp: 200,
+   maxDepth: 100,
+   background: color(0, 0, 0),
+   vFov: 40,
+   lookFrom: point3(478, 278, -600),
+   lookAt: point3(278, 278, 0),
+   vUp: vec3(0, 1, 0),
+   defocusAngle: 0
+};
+
 const SCENE_NAMES = [
    'Test Scene',
    'Moving Spheres',
@@ -273,8 +339,9 @@ const SCENE_NAMES = [
    'Dark',
    'Earth',
    'Perlin Noise',
+   'Cornell Box',
    'Cornell Smoke',
-   'Cornell Box'
+   'Finale Demo Scene'
 ];
 const SCENE_LIST = {
    'Test Scene': {
@@ -301,13 +368,17 @@ const SCENE_LIST = {
       scene: PerlinNoiseScene,
       camera: PerlinNoiseSceneCamera
    },
+   'Cornell Box': {
+      scene: CornellBox,
+      camera: CornellBoxCamera
+   },
    'Cornell Smoke': {
       scene: CornellSmokeScene,
       camera: CornellSmokeSceneCamera
    },
-   'Cornell Box': {
-      scene: CornellBox,
-      camera: CornellBoxCamera
+   'Finale Demo Scene': {
+      scene: FinaleScene,
+      camera: FinaleSceneCamera
    }
 };
 

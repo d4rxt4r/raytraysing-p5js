@@ -1,4 +1,4 @@
-import { Vector, vec3, randNormVec3 } from '../utils/vector.js';
+import { Vector, vec3 } from '../utils/vector.js';
 import { Texture, SolidColor, BLACK_CLR } from './Texture.js';
 import Ray from './Ray.js';
 
@@ -26,7 +26,7 @@ class Lambertian extends Material {
    }
 
    scatter(rayIn, hitRec) {
-      let scatterDirection = add(hitRec.normal, randNormVec3());
+      let scatterDirection = add(hitRec.normal, Vector.randomNorm());
       if (nearZero(scatterDirection)) {
          scatterDirection = rec.normal;
       }
@@ -49,7 +49,7 @@ class Metal extends Material {
    scatter(rayIn, hitRec) {
       let reflected = reflect(rayIn.direction, hitRec.normal);
       if (this.fuzz) {
-         reflected = normalize(reflected).add(scale(randNormVec3(), this.fuzz));
+         reflected = normalize(reflected).add(scale(Vector.randomNorm(), this.fuzz));
       }
       const scattered = new Ray(hitRec.p, reflected);
 

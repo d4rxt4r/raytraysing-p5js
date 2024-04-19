@@ -6,7 +6,7 @@ import RCamera from './classes/Camera.js';
 let currentScene;
 let Scene;
 let pixelColor;
-let Camera = new RCamera();
+let Camera = {};
 
 let originalSpp;
 let originalDepth;
@@ -75,7 +75,7 @@ onmessage = (e) => {
       }
 
       saveCameraSettings(Camera);
-      Camera.init();
+      Camera.init?.();
       return;
    }
 };

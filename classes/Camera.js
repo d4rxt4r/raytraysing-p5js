@@ -1,5 +1,5 @@
 import { deg2rad } from '../utils/math.js';
-import { Vector, vec3, randVec3InNormDisk } from '../utils/vector.js';
+import { Vector, vec3 } from '../utils/vector.js';
 import Interval from './Interval.js';
 import Ray from './Ray.js';
 
@@ -66,7 +66,7 @@ export default class Camera {
          .sub(scale(viewportU, 1 / 2))
          .sub(scale(viewportV, 1 / 2));
 
-      this._pixel00Loc = viewportUL.add(add(this._pixelDeltaU, this._pixelDeltaV));
+      this._pixel00Loc = add(add(this._pixelDeltaU, this._pixelDeltaV), viewportUL);
 
       const defocusRadius = this.focusDist * Math.tan(deg2rad(this.defocusAngle / 2));
       this._defocusDiskU = scale(this.u, defocusRadius);
@@ -78,7 +78,7 @@ export default class Camera {
    }
 
    defocusDiskSample() {
-      const p = randVec3InNormDisk();
+      const p = Vector.randomNormDisk();
       return add(this.center, scale(this._defocusDiskU, p.x)).add(scale(this._defocusDiskV, p.y));
    }
 

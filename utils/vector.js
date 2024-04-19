@@ -9,28 +9,57 @@ class Vector {
       this.z = z;
    }
 
-   copy() {
-      return Vector.copy(this);
-   }
-
    add(vec) {
-      return Vector.add(this, vec);
+      this.x += vec.x;
+      this.y += vec.y;
+      this.z += vec.z;
+
+      return this;
    }
 
    sub(vec) {
-      return Vector.sub(this, vec);
+      this.x -= vec.x;
+      this.y -= vec.y;
+      this.z -= vec.z;
+
+      return this;
    }
 
    mul(vec) {
-      return Vector.mul(this, vec);
+      this.x *= vec.x;
+      this.y *= vec.y;
+      this.z *= vec.z;
+
+      return this;
    }
 
    scale(s) {
-      return Vector.scale(this, s);
+      this.x *= s;
+      this.y *= s;
+      this.z *= s;
+
+      return this;
    }
 
    div(vec) {
-      return Vector.div(this, vec);
+      this.x /= vec.x;
+      this.y /= vec.y;
+      this.z /= vec.z;
+
+      return this;
+   }
+
+   normalize() {
+      const mag = this.mag();
+      return this.scale(1 / mag);
+   }
+
+   cross(vec) {
+      return Vector.cross(this, vec);
+   }
+
+   dot(vec) {
+      return Vector.dot(this, vec);
    }
 
    mag() {
@@ -41,16 +70,8 @@ class Vector {
       return Vector.magSq(this);
    }
 
-   normalize() {
-      return Vector.normalize(this);
-   }
-
-   dot(vec) {
-      return Vector.dot(this, vec);
-   }
-
-   cross(vec) {
-      return Vector.cross(this, vec);
+   copy() {
+      return Vector.copy(this);
    }
 
    axisVal(axis) {
@@ -93,7 +114,7 @@ class Vector {
 
    static normalize(vec) {
       const mag = Vector.mag(vec);
-      return new Vector(vec.x / mag, vec.y / mag, vec.z / mag);
+      return Vector.scale(vec, 1 / mag);
    }
 
    static dot(vec1, vec2) {
@@ -112,6 +133,13 @@ class Vector {
       return new Vector(vec.x, vec.y, vec.z);
    }
 
+   /**
+    * Returns the value of the specified axis of a vector.
+    *
+    * @param {Object} vec - The vector object.
+    * @param {number} axis - The axis to retrieve the value from.
+    * @return {number} The value of the specified axis.
+    */
    static axisVal(vec, axis) {
       if (axis === 1) {
          return vec.y;
@@ -122,19 +150,86 @@ class Vector {
       return vec.x;
    }
 
+   /**
+    * Reflects a vector off a surface defined by a normal vector.
+    *
+    * @param {Vector} vec - The vector to reflect.
+    * @param {Vector} normal - The normal vector of the surface.
+    * @return {Vector} The reflected vector.
+    */
    static reflect(vec, normal) {
       return Vector.sub(vec, Vector.scale(normal, 2 * Vector.dot(vec, normal)));
    }
 
-   static refract(vec, normal, eoe) {
-      const cosTheta = Math.min(Vector.dot(Vector.scale(vec, -1), normal), 1);
-      const rOutPerp = Vector.scale(Vector.add(vec, Vector.scale(normal, cosTheta)), eoe);
-      const rOutParallel = Vector.scale(normal, -Math.sqrt(Math.abs(1.0 - rOutPerp.magSq())));
-      return Vector.add(rOutPerp, rOutParallel);
+   /**
+    * Calculates the refracted vector based on the input vector, normal vector, and exit optical
+    * density over air (eoe). The refracted vector is calculated using Snell's law.
+    *
+    * @param {Vector} uv - The input vector.
+    * @param {Vector} normal - The normal vector.
+    * @param {number} eoe - The exit optical density over air.
+    * @return {Vector} The refracted vector.
+    */
+   static refract(uv, normal, eoe) {
+      const cosTheta = Math.min(Vector.scale(uv, -1).dot(normal), 1);
+      const rOutPerp = Vector.scale(normal, cosTheta).add(uv).scale(eoe);
+      const rOutParallel = Vector.scale(normal, -Math.sqrt(Math.abs(1 - rOutPerp.magSq())));
+      return rOutPerp.add(rOutParallel);
    }
 
+   /**
+    * Checks if a vector is near zero.
+    *
+    * @param {Vector} vec - The vector to check.
+    * @return {boolean}
+    */
    static nearZero(vec) {
       return Math.abs(vec.x) < EPS && Math.abs(vec.y) < EPS && Math.abs(vec.z) < EPS;
+   }
+
+   /**
+    * Generates a random 3D vector within the specified range.
+    *
+    * @param {number} min - The minimum value of the range (optional).
+    * @param {number} max - The maximum value of the range (optional).
+    * @return {Vector} The randomly generated 3D vector.
+    */
+   static random(min, max) {
+      if (min === null || max === null) {
+         return new Vector(Math.random(), Math.random(), Math.random());
+      }
+
+      return new Vector(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
+   }
+
+   /**
+    * Generates a random 3D vector with a magnitude of 1.
+    *
+    * @return {Vector}
+    */
+   static randomNorm() {
+      while (true) {
+         const p = Vector.random(-1, 1);
+         if (p.magSq() < 1) {
+            return p.normalize();
+         }
+      }
+   }
+
+   /**
+    * Generates a random vector within a normalized disk.
+    *
+    * @return {Vector}
+    */
+   static randomNormDisk() {
+      while (true) {
+         const p = Vector.random(-1, 1);
+         p.z = 0;
+
+         if (p.magSq() < 1) {
+            return p;
+         }
+      }
    }
 }
 
@@ -142,44 +237,7 @@ function vec3(x, y, z) {
    return new Vector(x, y, z);
 }
 
-function randVec3(min, max) {
-   if (min == null || max == null) {
-      return vec3(Math.random(), Math.random(), Math.random());
-   }
+const color = vec3;
+const point3 = vec3;
 
-   return vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
-}
-
-function randVec3InUnitSphere() {
-   while (true) {
-      const p = randVec3(-1, 1);
-      if (p.magSq() < 1) {
-         return p;
-      }
-   }
-}
-
-function randVec3InNormDisk() {
-   while (true) {
-      const p = randVec3(-1, 1);
-      p.z = 0;
-
-      if (p.magSq() < 1) {
-         return p;
-      }
-   }
-}
-
-function randVec3OnHemisphere(normal) {
-   const onUnitSphere = randNormVec3();
-   if (Vector.dot(onUnitSphere, normal) > 0) {
-      return onUnitSphere;
-   }
-   return Vector.mul(onUnitSphere, -1);
-}
-
-function randNormVec3() {
-   return Vector.normalize(randVec3InUnitSphere());
-}
-
-export { Vector, vec3, randVec3, randNormVec3, randVec3OnHemisphere, randVec3InNormDisk };
+export { Vector, vec3, color, point3 };

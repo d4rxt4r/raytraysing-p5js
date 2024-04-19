@@ -1,4 +1,4 @@
-import { vec3, randVec3 } from './vector.js';
+import { Vector, vec3 } from './vector.js';
 import { int } from './math.js';
 import Interval from '../classes/Interval.js';
 
@@ -85,7 +85,7 @@ function linearToGamma(component) {
 }
 
 function randomColor(min, max) {
-   const randVec = randVec3(min, max);
+   const randVec = Vector.random(min, max);
    return vec3(Math.abs(randVec.x), Math.abs(randVec.y), Math.abs(randVec.z));
 }
 

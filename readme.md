@@ -15,5 +15,5 @@ TODO
 -  [ ] Additional 2D Primitives
 -  [ ] Volumes
 -  [ ] Rewrite classes in es6 style
--  [ ] Rewiew code for optimizations
+-  [ ] Review code for optimizations
 -  [ ] Scene editor

@@ -1,8 +1,11 @@
-import { vec3 } from '../utils/vector.js';
+import { Vector, vec3 } from '../utils/vector.js';
+import Ray from './Ray.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
-export class Hittable {
+const { add, sub } = Vector;
+
+class Hittable {
    hit(ray, rayT, hitRec) {
       throw new Error('Not implemented');
    }
@@ -12,7 +15,29 @@ export class Hittable {
    }
 }
 
-export class HittableList extends Hittable {
+class Translate extends Hittable {
+   constructor(object, offset) {
+      super();
+
+      this._object = object;
+      this._offset = offset;
+
+      this._boundingBox = AABB.add(object.boundingBox, offset);
+   }
+   hit(ray, rayT, hitRec) {
+      const offsetRay = new Ray(sub(ray.origin, this._offset), ray.direction);
+
+      if (!this._object.hit(offsetRay, rayT, hitRec)) {
+         return false;
+      }
+
+      hitRec.p = add(hitRec.p, this._offset);
+
+      return true;
+   }
+}
+
+class HittableList extends Hittable {
    constructor(object) {
       super();
 
@@ -46,3 +71,5 @@ export class HittableList extends Hittable {
       return hitAnything;
    }
 }
+
+export { Hittable, Translate, HittableList };

@@ -72,4 +72,8 @@ export default class AABB {
 
       return true;
    }
+
+   static add(bBox, offset) {
+      return new AABB(Interval.add(bBox.x, offset.x), Interval.add(bBox.y, offset.y), Interval.add(bBox.z, offset.z));
+   }
 }

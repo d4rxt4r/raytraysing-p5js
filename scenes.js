@@ -1,7 +1,7 @@
 import { Vector, vec3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
 import { randomColor, LOADED_TEX } from './utils/image.js';
-import { HittableList } from './classes/Scene.js';
+import { HittableList, Translate } from './classes/Scene.js';
 import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture } from './classes/Texture.js';
@@ -158,9 +158,8 @@ const EarthSceneCamera = {
    lookFrom: vec3(0, 0, 12),
    lookAt: vec3(0, 0, 0),
    vUp: vec3(0, 1, 0),
-   defocusAngle: 0,
-
-}
+   defocusAngle: 0
+};
 
 function PerlinScene() {
    // Use alea alg to e nsure that Math.random gives same output across all workers
@@ -183,7 +182,7 @@ const PerlinScenCamera = {
    lookAt: vec3(0, 1, 0),
    vUp: vec3(0, 1, 0),
    defocusAngle: 0
-}
+};
 
 function CornellBox() {
    const scene = new HittableList();
@@ -241,7 +240,7 @@ const SCENE_LIST = {
    },
    'Perlin Noise': {
       scene: PerlinScene,
-      camera: PerlinScenCamera,
+      camera: PerlinScenCamera
    },
    'Cornell Box': {
       scene: CornellBox,

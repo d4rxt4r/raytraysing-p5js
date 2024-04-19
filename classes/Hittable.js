@@ -28,7 +28,7 @@ class Translate extends Hittable {
       this.$boundingBox = AABB.add(object.boundingBox, offset);
    }
    hit(ray, rayT, hitRec) {
-      const offsetRay = new Ray(Vector.sub(ray.origin, this._offset), ray.direction);
+      const offsetRay = new Ray(Vector.sub(ray.origin, this._offset, ray.time), ray.direction);
 
       if (!this._object.hit(offsetRay, rayT, hitRec)) {
          return false;

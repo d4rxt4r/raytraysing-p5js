@@ -51,24 +51,26 @@ class CheckerBoard extends Texture {
 }
 
 class ImageTexture extends Texture {
+   #image;
+
    constructor(image) {
       super();
 
-      this._image = image;
+      this.#image = image;
    }
 
    value(u, v) {
-      if (this._image.height <= 0) {
+      if (this.#image.height <= 0) {
          return vec3(0, 1, 1);
       }
 
       u = new Interval(0, 1).clamp(u);
       v = 1.0 - new Interval(0, 1).clamp(v); // Flip V to image coordinates
 
-      const i = int(u * this._image.width);
-      const j = int(v * this._image.height);
-      const rIndex = getPixelIndex(i, j, this._image.width);
-      const pixel = [this._image.pixels[rIndex], this._image.pixels[rIndex + 1], this._image.pixels[rIndex + 2]];
+      const i = int(u * this.#image.width);
+      const j = int(v * this.#image.height);
+      const rIndex = getPixelIndex(i, j, this.#image.width);
+      const pixel = [this.#image.pixels[rIndex], this.#image.pixels[rIndex + 1], this.#image.pixels[rIndex + 2]];
 
       const colorScale = 1.0 / 255;
       return vec3(colorScale * pixel[0], colorScale * pixel[1], colorScale * pixel[2]);

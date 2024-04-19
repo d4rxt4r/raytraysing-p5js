@@ -1,28 +1,13 @@
 import { deg2rad } from '../utils/math.js';
 import { Vector, vec3 } from '../utils/vector.js';
 import { color } from '../utils/image.js';
+import HitRecord from './HitRecord.js';
 import Interval from './Interval.js';
 import Ray from './Ray.js';
 
-const { add, sub, mul, cross, scale, dot } = Vector;
+const { add, sub, mul, cross, scale } = Vector;
 
 const DT = new Interval(0.001, Infinity);
-
-export class HitRecord {
-   p;
-   normal;
-   mat;
-   frontFace;
-   t;
-   u;
-   v;
-   normal;
-
-   setFaceNormal(ray, outwardNormal) {
-      this.frontFace = dot(ray.direction, outwardNormal) < 0;
-      this.normal = this.frontFace ? outwardNormal : scale(outwardNormal, -1);
-   }
-}
 
 export default class Camera {
    constructor(iw = 100, ih = 100, settings = {}) {
@@ -87,8 +72,9 @@ export default class Camera {
       );
       const rayOrigin = this.defocusAngle <= 0 ? this.center.copy() : this.#defocusDiskSample();
       const rayDirection = sub(pixelSample, rayOrigin);
+      const rayTime = Math.random();
 
-      return new Ray(rayOrigin, rayDirection);
+      return new Ray(rayOrigin, rayDirection, rayTime);
    }
 
    #getRayColor(scene, ray, depth) {

@@ -1,65 +1,92 @@
-import { int } from '../utils/math.js';
 import { Vector, vec3 } from '../utils/vector.js';
 import { color } from '../utils/image.js';
 import { Diffuse } from './Materials.js';
-import { Hittable, HittableList } from './Scene.js';
+import { Hittable, HittableList } from './Hittable.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
 const { add, sub, scale, dot, cross, normalize } = Vector;
 
-const EMPTY_BBOX = new AABB(vec3(0, 0, 0), vec3(0, 0, 0));
+class Sphere extends Hittable {
+   #center;
+   #radius;
+   #mat;
+   #centerOffset;
+   #isMoving;
+   #centerVec;
 
-export class BHVNode extends Hittable {
-   constructor(objects, start, end) {
+   constructor(center, radius, mat, centerOffset) {
       super();
 
-      this.$boundingBox = EMPTY_BBOX;
-      for (let object_index = start; object_index < end; object_index++) {
-         this.$boundingBox = new AABB(this.$boundingBox, objects[object_index].boundingBox);
-      }
+      this.#center = center;
+      this.#radius = radius || 0;
+      this.#mat = mat || new Diffuse(color(1, 1, 1));
 
-      const axis = this.$boundingBox.longestAxis();
-      const object_span = end - start;
+      const rVec = vec3(radius, radius, radius);
 
-      if (object_span == 1) {
-         this.left = this.right = objects[start];
-      } else if (object_span == 2) {
-         this.left = objects[start];
-         this.right = objects[start + 1];
+      if (centerOffset instanceof Vector) {
+         this.#isMoving = true;
+         this.#centerOffset = centerOffset;
+         this.#centerVec = sub(centerOffset, center);
+         this.$boundingBox = new AABB(
+            new AABB(sub(center, rVec), add(center, rVec)),
+            new AABB(sub(centerOffset, rVec), add(centerOffset, rVec))
+         );
       } else {
-         const sortedArray = objects.slice(start, end);
-         sortedArray.sort((a, b) => BHVNode.boxCompare(a, b, axis));
-         for (let i = start; i < end; i++) {
-            objects[i] = sortedArray[i - start];
-         }
-
-         const mid = int(start + object_span / 2);
-         this.left = new BHVNode(objects, start, mid);
-         this.right = new BHVNode(objects, mid, end);
+         this.$boundingBox = new AABB(sub(this.#center, rVec), add(this.#center, rVec));
       }
+   }
+
+   #getSphereUV(p) {
+      const theta = Math.acos(-p.y);
+      const phi = Math.atan2(-p.z, p.x) + Math.PI;
+
+      return {
+         u: phi / (2 * Math.PI),
+         v: theta / Math.PI
+      };
+   }
+
+   #sphereCenter(time) {
+      return add(this.#center, scale(this.#centerVec, time));
    }
 
    hit(ray, rayT, hitRec) {
-      if (!this.$boundingBox.hit(ray, rayT)) {
+      const center = this.#isMoving ? this.#sphereCenter(ray.time) : this.#center;
+      const oc = sub(center, ray.origin);
+      const a = ray.direction.magSq();
+      const h = dot(ray.direction, oc);
+      const c = oc.magSq() - this.#radius * this.#radius;
+
+      const discriminant = h * h - a * c;
+
+      if (discriminant < 0) {
          return false;
       }
 
-      const rT = new Interval(rayT);
-      const hitLeft = this.left.hit(ray, rayT, hitRec);
-      const hitRight = this.right.hit(ray, new Interval(rT.min, hitLeft ? hitRec.t : rT.max), hitRec);
+      const sqrtD = Math.sqrt(discriminant);
+      let root = (h - sqrtD) / a;
+      if (!rayT.surrounds(root)) {
+         root = (h + sqrtD) / a;
+         if (!rayT.surrounds(root)) {
+            return false;
+         }
+      }
 
-      return hitLeft || hitRight;
-   }
+      hitRec.t = root;
+      hitRec.p = ray.at(hitRec.t);
+      const outward_normal = scale(sub(hitRec.p, this.#center), 1 / this.#radius);
+      hitRec.setFaceNormal(ray, outward_normal);
+      const { u, v } = this.#getSphereUV(outward_normal);
+      hitRec.u = u;
+      hitRec.v = v;
+      hitRec.mat = this.#mat;
 
-   static boxCompare(a, b, axisIndex) {
-      const a_axis_interval = a.boundingBox.axisInterval(axisIndex);
-      const b_axis_interval = b.boundingBox.axisInterval(axisIndex);
-      return a_axis_interval.min - b_axis_interval.min;
+      return true;
    }
 }
 
-export class Quad extends Hittable {
+class Quad extends Hittable {
    constructor(Q, u, v, mat) {
       super();
 
@@ -118,61 +145,6 @@ export class Quad extends Hittable {
    }
 }
 
-class Sphere extends Hittable {
-   constructor(center, radius, mat) {
-      super();
-      this.center = center;
-      this.radius = radius || 0;
-      this.mat = mat || new Diffuse(color(1, 1, 1));
-
-      const rVec = vec3(radius, radius, radius);
-      this.$boundingBox = new AABB(sub(this.center, rVec), add(this.center, rVec));
-   }
-
-   hit(ray, rayT, hitRec) {
-      const oc = sub(this.center, ray.origin);
-      const a = ray.direction.magSq();
-      const h = dot(ray.direction, oc);
-      const c = oc.magSq() - this.radius * this.radius;
-
-      const discriminant = h * h - a * c;
-
-      if (discriminant < 0) {
-         return false;
-      }
-
-      const sqrtD = Math.sqrt(discriminant);
-      let root = (h - sqrtD) / a;
-      if (!rayT.surrounds(root)) {
-         root = (h + sqrtD) / a;
-         if (!rayT.surrounds(root)) {
-            return false;
-         }
-      }
-
-      hitRec.t = root;
-      hitRec.p = ray.at(hitRec.t);
-      const outward_normal = scale(sub(hitRec.p, this.center), 1 / this.radius);
-      hitRec.setFaceNormal(ray, outward_normal);
-      const { u, v } = this.getSphereUV(outward_normal);
-      hitRec.u = u;
-      hitRec.v = v;
-      hitRec.mat = this.mat;
-
-      return true;
-   }
-
-   getSphereUV(p) {
-      const theta = Math.acos(-p.y);
-      const phi = Math.atan2(-p.z, p.x) + Math.PI;
-
-      return {
-         u: phi / (2 * Math.PI),
-         v: theta / Math.PI
-      };
-   }
-}
-
 class Box extends HittableList {
    constructor(a, b, mat) {
       super();
@@ -194,4 +166,4 @@ class Box extends HittableList {
    }
 }
 
-export { Sphere, Box };
+export { Sphere, Quad, Box };

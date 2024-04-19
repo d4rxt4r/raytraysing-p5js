@@ -19,13 +19,20 @@ export default class Ray {
    #direction;
 
    /**
+    * The time of the Ray.
+    * @type {number}
+    */
+   #time;
+
+   /**
     * Creates a Ray.
     * @param {Vector} origin - The origin of the Ray.
     * @param {Vector} direction - The direction of the Ray.
     */
-   constructor(origin, direction) {
+   constructor(origin, direction, time) {
       this.#origin = origin;
       this.#direction = direction;
+      this.#time = time ?? 0;
    }
 
    /**
@@ -42,6 +49,10 @@ export default class Ray {
     */
    get direction() {
       return this.#direction;
+   }
+
+   get time() {
+      return this.#time;
    }
 
    /**

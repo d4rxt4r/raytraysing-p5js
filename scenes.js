@@ -1,12 +1,13 @@
 import { Vector, vec3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
 import { randomColor, LOADED_TEX } from './utils/image.js';
-import { HittableList, Translate } from './classes/Scene.js';
-import { BHVNode, Sphere, Quad, Box } from './classes/Objects.js';
+import { HittableList, Translate } from './classes/Hittable.js';
+import { Sphere, Quad, Box } from './classes/Objects.js';
+import BHVNode from './classes/BHVNode.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture } from './classes/Texture.js';
 
-const { sub } = Vector;
+const { add, sub } = Vector;
 
 function TestScene() {
    const scene = new HittableList();
@@ -32,7 +33,7 @@ const TestSceneCamera = {
    background: vec3(0.7, 0.8, 1)
 };
 
-function DemoScene(camera) {
+function MovingSpheres(camera) {
    const scene = new HittableList();
    scene.add(new Sphere(vec3(0, -1000, 0), 1000, new Diffuse(vec3(0.5, 0.5, 0.5))));
 
@@ -44,7 +45,8 @@ function DemoScene(camera) {
             if (choose_mat < 0.8) {
                // diffuse
                const albedo = randomColor();
-               scene.add(new Sphere(center, 0.2, new Diffuse(albedo)));
+               const centerOffset = add(center, vec3(0, randomDouble(0, 0.5), 0));
+               scene.add(new Sphere(center, 0.2, new Diffuse(albedo), centerOffset));
             } else if (choose_mat < 0.95) {
                // metal
                const albedo = randomColor(0.5, 1);
@@ -79,7 +81,7 @@ function DemoScene(camera) {
    return world;
 }
 
-const DemoSceneCamera = {
+const MovingSpheresCamera = {
    spp: 20,
    maxDepth: 10,
    vFov: 20,
@@ -209,15 +211,15 @@ const CornellBoxCamera = {
    defocusAngle: 0
 };
 
-const SCENE_NAMES = ['Test Scene', 'Spheres', 'Quads', 'Dark', 'Earth', 'Perlin Noise', 'Cornell Box'];
+const SCENE_NAMES = ['Test Scene', 'Moving Spheres', 'Quads', 'Dark', 'Earth', 'Perlin Noise', 'Cornell Box'];
 const SCENE_LIST = {
    'Test Scene': {
       scene: TestScene,
       camera: TestSceneCamera
    },
-   Spheres: {
-      scene: DemoScene,
-      camera: DemoSceneCamera
+   'Moving Spheres': {
+      scene: MovingSpheres,
+      camera: MovingSpheresCamera
    },
    Quads: {
       scene: QuadsScene,

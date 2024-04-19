@@ -1,7 +1,7 @@
 import { Vector } from '../utils/vector.js';
 import { color } from '../utils/image.js';
 import { Texture, SolidColor } from './Texture.js';
-import { HitRecord } from './Camera.js';
+import HitRecord from './HitRecord.js';
 import Ray from './Ray.js';
 
 const { normalize, scale, dot, reflect, refract, nearZero } = Vector;
@@ -44,10 +44,10 @@ class Lambertian extends Material {
    }
 
    /**
-    * @param {Ray} ray
+    * @param {Ray} rayIn
     * @param {HitRecord} hitRec
     */
-   scatter(ray, hitRec) {
+   scatter(rayIn, hitRec) {
       let scatterDirection = Vector.randomNorm().add(hitRec.normal);
       if (nearZero(scatterDirection)) {
          scatterDirection = hitRec.normal;
@@ -55,7 +55,7 @@ class Lambertian extends Material {
 
       return {
          scatter: true,
-         scattered: new Ray(hitRec.p, scatterDirection),
+         scattered: new Ray(hitRec.p, scatterDirection, rayIn.time),
          attenuation: this.#texture.value(hitRec.u, hitRec.v, hitRec.p)
       };
    }
@@ -86,7 +86,7 @@ class Metal extends Material {
       if (this.#fuzz) {
          reflected.normalize().add(Vector.randomNorm().scale(this.#fuzz));
       }
-      const scattered = new Ray(hitRec.p, reflected);
+      const scattered = new Ray(hitRec.p, reflected, rayIn.time);
 
       return {
          scatter: dot(scattered.direction, hitRec.normal) > 0,
@@ -134,7 +134,7 @@ class Dielectric extends Material {
 
       return {
          scatter: true,
-         scattered: new Ray(hitRec.p, direction),
+         scattered: new Ray(hitRec.p, direction, rayIn.time),
          attenuation: color(1, 1, 1)
       };
    }

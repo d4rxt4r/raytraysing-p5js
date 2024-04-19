@@ -12,7 +12,6 @@ References:
 TODO
 
 -  [ ] Track performance
--  [ ] Implement workers queue
 -  [ ] Additional 2D Primitives
 -  [ ] Rewrite classes in es6 style
 -  [ ] Scene editor

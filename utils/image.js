@@ -13,7 +13,7 @@ const LOADED_TEX = [];
 
 function getHeight(w) {
    const height = int(w / ASPECT_RATIO);
-   return height || 1;
+   return height > window.innerHeight ? window.innerHeight : height;
 }
 
 class UserImage {

@@ -1,7 +1,9 @@
 import Renderer from '../classes/Renderer.js';
+import { FULL_RES } from '../utils/image.js';
 
 function calculateZoom(canvasWidth) {
-   return Math.min(window.innerWidth / canvasWidth, 10);
+   const fullWidth = FULL_RES > window.innerWidth ? window.innerWidth : FULL_RES;
+   return fullWidth / canvasWidth;
 }
 
 function createCanvas(width = 100, height = 100, parentEl = document.body) {

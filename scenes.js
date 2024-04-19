@@ -1,8 +1,9 @@
-import { Vector, vec3 } from './utils/vector.js';
+import { Vector, vec3, point3 } from './utils/vector.js';
 import { randomDouble } from './utils/math.js';
 import { randomColor, LOADED_TEX } from './utils/image.js';
-import { HittableList, Translate } from './classes/Hittable.js';
+import { HittableList } from './classes/Hittable.js';
 import { Sphere, Quad, Box } from './classes/Objects.js';
+import { Translate, RotateY } from './classes/Instances.js';
 import BHVNode from './classes/BHVNode.js';
 import { Diffuse, Metal, Dielectric, DiffusedLight } from './classes/Materials.js';
 import { CheckerBoard, ImageTexture, NoiseTexture, MarbleTexture } from './classes/Texture.js';
@@ -13,19 +14,25 @@ function TestScene() {
    const scene = new HittableList();
 
    scene.add(new Sphere(vec3(0, -100.5, 0), 100, new Diffuse(vec3(0.1, 0.3, 0.1))));
-   const checker = new CheckerBoard(0.07, vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
-   scene.add(new Sphere(vec3(0, 0, 0), 0.5, new Diffuse(checker)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.4, new Dielectric(1.5)));
    scene.add(new Sphere(vec3(0.7, 0, -1), 0.3, new Dielectric(1 / 1.5)));
-   scene.add(new Sphere(vec3(-0.8, -0.15, -0.5), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
+   scene.add(new Sphere(vec3(-0.7, 0, -0.3), 0.3, new Metal(vec3(0.8, 0.8, 0.8))));
+   
+   const checker = new CheckerBoard(0.1, vec3(0.1, 0.1, 0.1), vec3(0.9, 0.9, 0.9));
+   let box = new Box(vec3(0, 0, 0), vec3(0.6, 0.6, 0.6), new Diffuse(checker));
+   box = new Translate(box, vec3(-0.3, -0.35, -0.3));
+   box = new RotateY(box, -25);
+
+   scene.add(box);
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
 
 const TestSceneCamera = {
    lookFrom: vec3(0, 2, -8),
-   lookAt: vec3(0, -0.1, 0),
-   spp: 20,
+   lookAt: vec3(0, 0, 0),
+   spp: 100,
+   renderRes: 0.3,
    maxDepth: 50,
    vFov: 12,
    defocusAngle: 1,
@@ -159,7 +166,7 @@ const EarthSceneCamera = {
    defocusAngle: 0
 };
 
-function PerlinScene() {
+function PerlinNoiseScene() {
    const scene = new HittableList();
    const noiseTex = new NoiseTexture(4);
    const turbTex = new MarbleTexture(3);
@@ -169,7 +176,7 @@ function PerlinScene() {
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
 
-const PerlinScenCamera = {
+const PerlinNoiseSceneCamera = {
    spp: 100,
    maxDepth: 50,
    vFov: 30,
@@ -194,17 +201,25 @@ function CornellBox() {
    scene.add(new Quad(vec3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
    scene.add(new Quad(vec3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
 
-   scene.add(new Box(vec3(130, 0, 65), vec3(295, 165, 230), white));
-   scene.add(new Box(vec3(265, 0, 295), vec3(430, 330, 460), white));
+   let box1 = new Box(point3(0, 0, 0), point3(165, 330, 165), white);
+   box1 = new RotateY(box1, 15);
+   box1 = new Translate(box1, vec3(265, 0, 295));
+
+   let box2 = new Box(point3(0, 0, 0), point3(165, 165, 165), white);
+   box2 = new RotateY(box2, -18);
+   box2 = new Translate(box2, vec3(130, 0, 65));
+
+   scene.add(box1);
+   scene.add(box2);
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
 }
 
 const CornellBoxCamera = {
-   spp: 50,
+   spp: 200,
    maxDepth: 50,
    background: vec3(0, 0, 0),
-   vFov: 40,
+   vFov: 45,
    lookFrom: vec3(278, 278, -800),
    lookAt: vec3(278, 278, 0),
    vUp: vec3(0, 1, 0),
@@ -234,8 +249,8 @@ const SCENE_LIST = {
       camera: EarthSceneCamera
    },
    'Perlin Noise': {
-      scene: PerlinScene,
-      camera: PerlinScenCamera
+      scene: PerlinNoiseScene,
+      camera: PerlinNoiseSceneCamera
    },
    'Cornell Box': {
       scene: CornellBox,

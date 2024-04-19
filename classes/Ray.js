@@ -32,7 +32,7 @@ export default class Ray {
    constructor(origin, direction, time) {
       this.#origin = origin;
       this.#direction = direction;
-      this.#time = time ?? 0;
+      this.#time = time;
    }
 
    /**

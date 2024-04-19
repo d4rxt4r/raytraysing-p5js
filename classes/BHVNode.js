@@ -34,13 +34,13 @@ export default class BHVNode extends Hittable {
       }
    }
 
-   hit(ray, rayT, hitRec) {
-      if (!this.$boundingBox.hit(ray, rayT)) {
+   hit(ray, rayInt, hitRec) {
+      if (!this.$boundingBox.hit(ray, rayInt)) {
          return false;
       }
 
-      const rT = new Interval(rayT);
-      const hitLeft = this.left.hit(ray, rayT, hitRec);
+      const rT = new Interval(rayInt);
+      const hitLeft = this.left.hit(ray, rayInt, hitRec);
       const hitRight = this.right.hit(ray, new Interval(rT.min, hitLeft ? hitRec.t : rT.max), hitRec);
 
       return hitLeft || hitRight;

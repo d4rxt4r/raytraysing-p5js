@@ -51,7 +51,7 @@ class Sphere extends Hittable {
       return add(this.#center, scale(this.#centerVec, time));
    }
 
-   hit(ray, rayT, hitRec) {
+   hit(ray, rayInt, hitRec) {
       const center = this.#isMoving ? this.#sphereCenter(ray.time) : this.#center;
       const oc = sub(center, ray.origin);
       const a = ray.direction.magSq();
@@ -66,9 +66,9 @@ class Sphere extends Hittable {
 
       const sqrtD = Math.sqrt(discriminant);
       let root = (h - sqrtD) / a;
-      if (!rayT.surrounds(root)) {
+      if (!rayInt.surrounds(root)) {
          root = (h + sqrtD) / a;
-         if (!rayT.surrounds(root)) {
+         if (!rayInt.surrounds(root)) {
             return false;
          }
       }
@@ -87,31 +87,41 @@ class Sphere extends Hittable {
 }
 
 class Quad extends Hittable {
+   #Q;
+   #u;
+   #v;
+   #mat;
+   #normal;
+   #D;
+   #w;
+
    constructor(Q, u, v, mat) {
       super();
 
-      this._Q = Q;
-      this._u = u;
-      this._v = v;
-      this._mat = mat;
+      this.#Q = Q;
+      this.#u = u;
+      this.#v = v;
+      this.#mat = mat;
 
       const n = cross(u, v);
-      this._normal = normalize(n);
-      this._D = dot(this._normal, Q);
-      this._w = scale(n, 1 / dot(n, n));
+      this.#normal = normalize(n);
+      this.#D = dot(this.#normal, Q);
+      this.#w = scale(n, 1 / dot(n, n));
 
-      this.setBoundingBox();
+      this.#setBoundingBox();
    }
 
-   setBoundingBox() {
-      const bBoxDiagonal1 = new AABB(this._Q, add(add(this._Q, this._u), this._v));
-      const bBoxDiagonal2 = new AABB(add(this._Q, this._u), add(this._Q, this._v));
+   #setBoundingBox() {
+      const bBoxDiagonal1 = new AABB(this.#Q, add(this.#Q, this.#u).add(this.#v));
+      const bBoxDiagonal2 = new AABB(add(this.#Q, this.#u), add(this.#Q, this.#v));
       this.$boundingBox = new AABB(bBoxDiagonal1, bBoxDiagonal2);
    }
 
    isInterior(a, b, hitRec) {
       const unitInterval = new Interval(0, 1);
-      if (!unitInterval.contains(a) || !unitInterval.contains(b)) return false;
+      if (!unitInterval.contains(a) || !unitInterval.contains(b)) {
+         return false;
+      }
 
       hitRec.u = a;
       hitRec.v = b;
@@ -119,27 +129,32 @@ class Quad extends Hittable {
       return true;
    }
 
-   hit(ray, rayT, hitRec) {
-      const denom = dot(this._normal, ray.direction);
+   hit(ray, rayInt, hitRec) {
+      const denom = dot(this.#normal, ray.direction);
 
-      // No hit if the ray is parallel to the plane.
-      if (Math.abs(denom) < 1e-8) return false;
+      if (Math.abs(denom) < 1e-8) {
+         return false;
+      }
 
-      const t = (this._D - dot(this._normal, ray.origin)) / denom;
-      if (!rayT.contains(t)) return false;
+      const t = (this.#D - dot(this.#normal, ray.origin)) / denom;
+      if (!rayInt.contains(t)) {
+         return false;
+      }
 
       const intersection = ray.at(t);
-      const planarHitPT = sub(intersection, this._Q);
+      const planarHitPT = sub(intersection, this.#Q);
 
-      const alpha = dot(this._w, cross(planarHitPT, this._v));
-      const beta = dot(this._w, cross(this._u, planarHitPT));
+      const alpha = dot(this.#w, cross(planarHitPT, this.#v));
+      const beta = dot(this.#w, cross(this.#u, planarHitPT));
 
-      if (!this.isInterior(alpha, beta, hitRec)) return false;
+      if (!this.isInterior(alpha, beta, hitRec)) {
+         return false;
+      }
 
       hitRec.t = t;
       hitRec.p = intersection;
-      hitRec.mat = this._mat;
-      hitRec.setFaceNormal(ray, this._normal);
+      hitRec.mat = this.#mat;
+      hitRec.setFaceNormal(ray, this.#normal);
 
       return true;
    }

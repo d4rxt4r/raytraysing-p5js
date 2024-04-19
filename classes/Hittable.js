@@ -9,34 +9,12 @@ class Hittable {
     */
    $boundingBox;
 
-   hit(ray, rayT, hitRec) {
+   hit(ray, rayInt, hitRec) {
       throw new Error('Not implemented');
    }
 
    get boundingBox() {
       return this.$boundingBox;
-   }
-}
-
-class Translate extends Hittable {
-   constructor(object, offset) {
-      super();
-
-      this._object = object;
-      this._offset = offset;
-
-      this.$boundingBox = AABB.add(object.boundingBox, offset);
-   }
-   hit(ray, rayT, hitRec) {
-      const offsetRay = new Ray(Vector.sub(ray.origin, this._offset, ray.time), ray.direction);
-
-      if (!this._object.hit(offsetRay, rayT, hitRec)) {
-         return false;
-      }
-
-      hitRec.p = Vector.add(hitRec.p, this._offset);
-
-      return true;
    }
 }
 
@@ -61,11 +39,11 @@ class HittableList extends Hittable {
       this.objects = [];
    }
 
-   hit(ray, rayT, hitRec) {
+   hit(ray, rayInt, hitRec) {
       let hitAnything = false;
-      let closestObj = rayT.max;
+      let closestObj = rayInt.max;
       this.objects.forEach((object) => {
-         if (object.hit(ray, new Interval(rayT.min, closestObj), hitRec)) {
+         if (object.hit(ray, new Interval(rayInt.min, closestObj), hitRec)) {
             hitAnything = true;
             closestObj = hitRec.t;
          }
@@ -75,4 +53,4 @@ class HittableList extends Hittable {
    }
 }
 
-export { Hittable, Translate, HittableList };
+export { Hittable, HittableList };

@@ -76,7 +76,7 @@ export default class Renderer {
             action: 'setTextures',
             textures: textures
          });
-      })
+      });
    }
 
    moveCamera(axis, val, pos = false) {

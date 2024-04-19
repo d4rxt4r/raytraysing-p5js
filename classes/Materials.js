@@ -50,7 +50,7 @@ class Lambertian extends Material {
    scatter(rayIn, hitRec) {
       let scatterDirection = Vector.randomNorm().add(hitRec.normal);
       if (nearZero(scatterDirection)) {
-         scatterDirection = hitRec.normal;
+         scatterDirection = hitRec.normal.copy();
       }
 
       return {

@@ -46,26 +46,26 @@ export default class AABB {
       return this.y.size > this.z.size ? 1 : 2;
    }
 
-   hit(r, rayT) {
-      const ray_orig = r.origin;
-      const ray_dir = r.direction;
+   hit(ray, rayInt) {
+      const rayOrig = ray.origin;
+      const rayDir = ray.direction;
 
       for (let axis = 0; axis < 3; axis++) {
          const ax = this.axisInterval(axis);
-         const adInv = 1 / ray_dir.axisVal(axis);
+         const adInv = 1 / rayDir.axisVal(axis);
 
-         const t0 = (ax.min - ray_orig.axisVal(axis)) * adInv;
-         const t1 = (ax.max - ray_orig.axisVal(axis)) * adInv;
+         const t0 = (ax.min - rayOrig.axisVal(axis)) * adInv;
+         const t1 = (ax.max - rayOrig.axisVal(axis)) * adInv;
 
          if (t0 < t1) {
-            if (t0 > rayT.min) rayT.min = t0;
-            if (t1 < rayT.max) rayT.max = t1;
+            if (t0 > rayInt.min) rayInt.min = t0;
+            if (t1 < rayInt.max) rayInt.max = t1;
          } else {
-            if (t1 > rayT.min) rayT.min = t1;
-            if (t0 < rayT.max) rayT.max = t0;
+            if (t1 > rayInt.min) rayInt.min = t1;
+            if (t0 < rayInt.max) rayInt.max = t0;
          }
 
-         if (rayT.max <= rayT.min) {
+         if (rayInt.max <= rayInt.min) {
             return false;
          }
       }

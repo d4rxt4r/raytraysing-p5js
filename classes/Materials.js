@@ -1,88 +1,132 @@
-import { Vector, vec3 } from '../utils/vector.js';
-import { Texture, SolidColor, BLACK_CLR } from './Texture.js';
+import { Vector } from '../utils/vector.js';
+import { color } from '../utils/image.js';
+import { Texture, SolidColor } from './Texture.js';
+import { HitRecord } from './Camera.js';
 import Ray from './Ray.js';
 
-const { add, normalize, scale, dot, reflect, refract, nearZero } = Vector;
+const { normalize, scale, dot, reflect, refract, nearZero } = Vector;
 
 class Material {
-   scatter() {
+   /**
+    * @param {Ray} ray
+    * @param {HitRecord} hitRec
+    */
+   scatter(ray, hitRec) {
       return false;
    }
 
-   emitted() {
-      return BLACK_CLR;
+   /**
+    * @param {HitRecord} hitRec
+    * @param {Vector} u
+    * @param {Vector} v
+    * @param {Vector} p
+    */
+   emitted(hitRec, u, v, p) {
+      return color(0, 0, 0);
    }
 }
 
 class Lambertian extends Material {
+   /**
+    * @param {Texture|SolidColor}
+    */
+   #texture;
+
    constructor(arg) {
       super();
+
       if (arg instanceof Texture) {
-         this._texture = arg;
+         this.#texture = arg;
          return;
       }
 
-      this._texture = new SolidColor(arg);
+      this.#texture = new SolidColor(arg);
    }
 
-   scatter(rayIn, hitRec) {
-      let scatterDirection = add(hitRec.normal, Vector.randomNorm());
+   /**
+    * @param {Ray} ray
+    * @param {HitRecord} hitRec
+    */
+   scatter(ray, hitRec) {
+      let scatterDirection = Vector.randomNorm().add(hitRec.normal);
       if (nearZero(scatterDirection)) {
-         scatterDirection = rec.normal;
+         scatterDirection = hitRec.normal;
       }
 
       return {
          scatter: true,
          scattered: new Ray(hitRec.p, scatterDirection),
-         attenuation: this._texture.value(hitRec.u, hitRec.v, hitRec.p)
+         attenuation: this.#texture.value(hitRec.u, hitRec.v, hitRec.p)
       };
    }
 }
 
 class Metal extends Material {
+   /**
+    * @param {Vector}
+    */
+   #albedo;
+   /**
+    * @param {number}
+    */
+   #fuzz;
+
    constructor(albedo, fuzz = 0) {
       super();
-      this.albedo = albedo;
-      this.fuzz = fuzz < 1 ? fuzz : 1;
+      this.#albedo = albedo;
+      this.#fuzz = fuzz < 1 ? fuzz : 1;
    }
 
+   /**
+    * @param {Ray} ray
+    * @param {HitRecord} hitRec
+    */
    scatter(rayIn, hitRec) {
       let reflected = reflect(rayIn.direction, hitRec.normal);
-      if (this.fuzz) {
-         reflected = normalize(reflected).add(scale(Vector.randomNorm(), this.fuzz));
+      if (this.#fuzz) {
+         reflected.normalize().add(Vector.randomNorm().scale(this.#fuzz));
       }
       const scattered = new Ray(hitRec.p, reflected);
 
       return {
          scatter: dot(scattered.direction, hitRec.normal) > 0,
          scattered,
-         attenuation: this.albedo
+         attenuation: this.#albedo
       };
    }
 }
 
 class Dielectric extends Material {
+   /**
+    * @param {number}
+    */
+   #refIndex;
+
    constructor(refIndex) {
       super();
-      this.refIndex = refIndex;
+
+      this.#refIndex = refIndex;
    }
 
-   reflectance(cosine, ri) {
+   #reflectance(cosine, ri) {
       let r0 = (1 - ri) / (1 + ri);
       r0 *= r0;
       return r0 + (1 - r0) * Math.pow(1 - cosine, 5);
    }
 
+   /**
+    * @param {Ray} ray
+    * @param {HitRecord} hitRec
+    */
    scatter(rayIn, hitRec) {
-      const ri = hitRec.frontFace ? 1 / this.refIndex : this.refIndex;
+      const ri = hitRec.frontFace ? 1 / this.#refIndex : this.#refIndex;
       const unitDirection = normalize(rayIn.direction);
+      const cosTheta = Math.min(dot(scale(unitDirection, -1), hitRec.normal), 1);
+      const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
+      const cantRefract = ri * sinTheta > 1;
 
-      const cos_theta = Math.min(dot(scale(unitDirection, -1), hitRec.normal), 1);
-      const sin_theta = Math.sqrt(1 - cos_theta * cos_theta);
-
-      const cannot_refract = ri * sin_theta > 1;
       let direction;
-      if (cannot_refract || this.reflectance(cos_theta, ri) > Math.random()) {
+      if (cantRefract || this.#reflectance(cosTheta, ri) > Math.random()) {
          direction = reflect(unitDirection, hitRec.normal);
       } else {
          direction = refract(unitDirection, hitRec.normal, ri);
@@ -91,28 +135,40 @@ class Dielectric extends Material {
       return {
          scatter: true,
          scattered: new Ray(hitRec.p, direction),
-         attenuation: vec3(1, 1, 1)
+         attenuation: color(1, 1, 1)
       };
    }
 }
 
 class DiffusedLight extends Material {
+   /**
+    * @param {Texture|SolidColor}
+    */
+   #texture;
+
    constructor(arg) {
       super();
 
       if (arg instanceof Texture) {
-         this._texture = arg;
+         this.#texture = arg;
          return;
       }
 
-      this._texture = new SolidColor(arg);
+      this.#texture = new SolidColor(arg);
    }
 
+   /**
+    * @param {HitRecord} hitRec
+    * @param {Vector} u
+    * @param {Vector} v
+    * @param {Vector} p
+    */
    emitted(hitRec, u, v, p) {
       if (!hitRec.frontFace) {
-         return BLACK_CLR;
+         return color(0, 0, 0);
       }
-      return this._texture.value(u, v, p);
+
+      return this.#texture.value(u, v, p);
    }
 }
 

@@ -9,21 +9,27 @@ export default class AABB {
          this.x = Interval.minmax(args[0].x, args[1].x);
          this.y = Interval.minmax(args[0].y, args[1].y);
          this.z = Interval.minmax(args[0].z, args[1].z);
-         return this.padToMinimums();
+         return this.#padToMinimums();
       }
 
       if (args[0] instanceof AABB && args[1] instanceof AABB) {
          this.x = new Interval(args[0].x, args[1].x);
          this.y = new Interval(args[0].y, args[1].y);
          this.z = new Interval(args[0].z, args[1].z);
-         return this.padToMinimums();
+         return this.#padToMinimums();
       }
 
       this.x = args[0];
       this.y = args[1];
       this.z = args[2];
 
-      this.padToMinimums();
+      this.#padToMinimums();
+   }
+
+   #padToMinimums() {
+      if (this.x.size < DELTA) this.x.expand(DELTA);
+      if (this.y.size < DELTA) this.y.expand(DELTA);
+      if (this.z.size < DELTA) this.z.expand(DELTA);
    }
 
    axisInterval(n) {
@@ -38,12 +44,6 @@ export default class AABB {
       }
 
       return this.y.size > this.z.size ? 1 : 2;
-   }
-
-   padToMinimums() {
-      if (this.x.size < DELTA) this.x = this.x.expand(DELTA);
-      if (this.y.size < DELTA) this.y = this.y.expand(DELTA);
-      if (this.z.size < DELTA) this.z = this.z.expand(DELTA);
    }
 
    hit(r, rayT) {

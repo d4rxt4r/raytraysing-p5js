@@ -4,45 +4,49 @@ import { getPixelIndex } from '../utils/image.js';
 import Perlin from './Perlin.js';
 import Interval from './Interval.js';
 
-export const BLACK_CLR = vec3(0, 0, 0);
-export const CYAN_CLR = vec3(0, 1, 1);
-
 class Texture {
    value() {
-      return BLACK_CLR;
+      return color(0, 0, 0);
    }
 }
 
 class SolidColor extends Texture {
+   #albedo;
+
    constructor(...args) {
       super();
 
-      if (!args.length === 1) {
-         this._albedo = vec3(...args);
+      if (args.length === 3) {
+         this.#albedo = vec3(...args);
       }
-      this._albedo = args[0];
+
+      this.#albedo = args[0] || color(0, 0, 0);
    }
 
    value() {
-      return this._albedo;
+      return this.#albedo;
    }
 }
 
 class CheckerBoard extends Texture {
-   constructor(scale, color1, color2) {
+   #invScale;
+   #even;
+   #odd;
+
+   constructor(scale, evenColor, oddColor) {
       super();
 
-      this._invScale = 1 / scale;
-      this._even = new SolidColor(color1);
-      this._odd = new SolidColor(color2);
+      this.#even = new SolidColor(evenColor);
+      this.#odd = new SolidColor(oddColor);
+      this.#invScale = 1 / scale;
    }
 
    value(u, v, p) {
-      const xBlock = Math.floor(u * this._invScale);
-      const yBlock = Math.floor(v * this._invScale);
+      const xBlock = Math.floor(u * this.#invScale);
+      const yBlock = Math.floor(v * this.#invScale);
       const isEven = (xBlock + yBlock) % 2 == 0;
 
-      return isEven ? this._even.value(u, v, p) : this._odd.value(u, v, p);
+      return isEven ? this.#even.value(u, v, p) : this.#odd.value(u, v, p);
    }
 }
 
@@ -55,7 +59,7 @@ class ImageTexture extends Texture {
 
    value(u, v) {
       if (this._image.height <= 0) {
-         return CYAN_CLR;
+         return vec3(0, 1, 1);
       }
 
       u = new Interval(0, 1).clamp(u);
@@ -93,7 +97,7 @@ class MarbleTexture extends NoiseTexture {
    }
 
    value(u, v, p) {
-      return Vector.scale(vec3(.5, .5, .5), 1 + Math.sin(this.$scale * p.z + 10 * this.$perlin.turb(p, 7)));
+      return Vector.scale(vec3(0.5, 0.5, 0.5), 1 + Math.sin(this.$scale * p.z + 10 * this.$perlin.turb(p, 7)));
    }
 }
 

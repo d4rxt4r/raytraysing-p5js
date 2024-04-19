@@ -3,15 +3,18 @@ import Ray from './Ray.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
-const { add, sub } = Vector;
-
 class Hittable {
+   /**
+    * @type {AABB}
+    */
+   $boundingBox;
+
    hit(ray, rayT, hitRec) {
       throw new Error('Not implemented');
    }
 
    get boundingBox() {
-      return this._boundingBox;
+      return this.$boundingBox;
    }
 }
 
@@ -22,16 +25,16 @@ class Translate extends Hittable {
       this._object = object;
       this._offset = offset;
 
-      this._boundingBox = AABB.add(object.boundingBox, offset);
+      this.$boundingBox = AABB.add(object.boundingBox, offset);
    }
    hit(ray, rayT, hitRec) {
-      const offsetRay = new Ray(sub(ray.origin, this._offset), ray.direction);
+      const offsetRay = new Ray(Vector.sub(ray.origin, this._offset), ray.direction);
 
       if (!this._object.hit(offsetRay, rayT, hitRec)) {
          return false;
       }
 
-      hitRec.p = add(hitRec.p, this._offset);
+      hitRec.p = Vector.add(hitRec.p, this._offset);
 
       return true;
    }
@@ -42,7 +45,7 @@ class HittableList extends Hittable {
       super();
 
       this.objects = [];
-      this._boundingBox = new AABB(vec3(0, 0, 0), vec3(0, 0, 0));
+      this.$boundingBox = new AABB(vec3(0, 0, 0), vec3(0, 0, 0));
 
       if (object) {
          this.add(object);
@@ -51,7 +54,7 @@ class HittableList extends Hittable {
 
    add(object) {
       this.objects.push(object);
-      this._boundingBox = new AABB(this.boundingBox, object.boundingBox);
+      this.$boundingBox = new AABB(this.boundingBox, object.boundingBox);
    }
 
    clear() {

@@ -1,5 +1,6 @@
 import { int } from '../utils/math.js';
 import { Vector, vec3 } from '../utils/vector.js';
+import { color } from '../utils/image.js';
 import { Diffuse } from './Materials.js';
 import { Hittable, HittableList } from './Scene.js';
 import Interval from './Interval.js';
@@ -13,12 +14,12 @@ export class BHVNode extends Hittable {
    constructor(objects, start, end) {
       super();
 
-      this._boundingBox = EMPTY_BBOX;
+      this.$boundingBox = EMPTY_BBOX;
       for (let object_index = start; object_index < end; object_index++) {
-         this._boundingBox = new AABB(this._boundingBox, objects[object_index].boundingBox);
+         this.$boundingBox = new AABB(this.$boundingBox, objects[object_index].boundingBox);
       }
 
-      const axis = this._boundingBox.longestAxis();
+      const axis = this.$boundingBox.longestAxis();
       const object_span = end - start;
 
       if (object_span == 1) {
@@ -40,7 +41,7 @@ export class BHVNode extends Hittable {
    }
 
    hit(ray, rayT, hitRec) {
-      if (!this._boundingBox.hit(ray, rayT)) {
+      if (!this.$boundingBox.hit(ray, rayT)) {
          return false;
       }
 
@@ -78,7 +79,7 @@ export class Quad extends Hittable {
    setBoundingBox() {
       const bBoxDiagonal1 = new AABB(this._Q, add(add(this._Q, this._u), this._v));
       const bBoxDiagonal2 = new AABB(add(this._Q, this._u), add(this._Q, this._v));
-      this._boundingBox = new AABB(bBoxDiagonal1, bBoxDiagonal2);
+      this.$boundingBox = new AABB(bBoxDiagonal1, bBoxDiagonal2);
    }
 
    isInterior(a, b, hitRec) {
@@ -122,10 +123,10 @@ class Sphere extends Hittable {
       super();
       this.center = center;
       this.radius = radius || 0;
-      this.mat = mat || new Diffuse(vec3(1, 1, 1));
+      this.mat = mat || new Diffuse(color(1, 1, 1));
 
       const rVec = vec3(radius, radius, radius);
-      this._boundingBox = new AABB(sub(this.center, rVec), add(this.center, rVec));
+      this.$boundingBox = new AABB(sub(this.center, rVec), add(this.center, rVec));
    }
 
    hit(ray, rayT, hitRec) {

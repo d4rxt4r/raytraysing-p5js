@@ -237,7 +237,6 @@ function vec3(x, y, z) {
    return new Vector(x, y, z);
 }
 
-const color = vec3;
 const point3 = vec3;
 
-export { Vector, vec3, color, point3 };
+export { Vector, vec3, point3 };

@@ -2,9 +2,14 @@ import { Vector, vec3 } from './vector.js';
 import { int } from './math.js';
 import Interval from '../classes/Interval.js';
 
+const color = vec3;
+
 const FULL_RES = 1200;
 const LOW_RES = 128;
 const ASPECT_RATIO = 16 / 9;
+
+const TEX_PATHS = ['../textures/earthmap.jpg'];
+const LOADED_TEX = [];
 
 function getHeight(w) {
    const height = int(w / ASPECT_RATIO);
@@ -43,9 +48,6 @@ class UserImage {
    }
 }
 
-const TEX_PATHS = ['../textures/earthmap.jpg'];
-const LOADED_TEX = [];
-
 async function preloadTextures() {
    const canvas = new OffscreenCanvas(1, 1);
    const ctx = canvas.getContext('2d');
@@ -65,17 +67,6 @@ function getPixelIndex(x, y, w) {
    return (y * w + x) * 4;
 }
 
-function averageColorComponent(a, b) {
-   return (a + b) / 2;
-}
-
-function averageColors(color1, color2) {
-   return vec3(
-      averageColorComponent(color1.x, color2.x),
-      averageColorComponent(color1.y, color2.y),
-      averageColorComponent(color1.z, color2.z)
-   );
-}
 function linearToGamma(component) {
    if (component > 0) {
       return Math.sqrt(component);
@@ -86,7 +77,7 @@ function linearToGamma(component) {
 
 function randomColor(min, max) {
    const randVec = Vector.random(min, max);
-   return vec3(Math.abs(randVec.x), Math.abs(randVec.y), Math.abs(randVec.z));
+   return color(Math.abs(randVec.x), Math.abs(randVec.y), Math.abs(randVec.z));
 }
 
 function setImagePixel(imgPixels, x, y, w, color) {
@@ -113,7 +104,6 @@ export {
    isTexturesLoaded,
    getPixelIndex,
    setImagePixel,
-   averageColorComponent,
-   averageColors,
-   randomColor
+   randomColor,
+   color
 };

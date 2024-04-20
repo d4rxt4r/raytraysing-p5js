@@ -8,7 +8,7 @@ const FULL_RES = 1200;
 const LOW_RES = 128;
 const ASPECT_RATIO = 16 / 9;
 
-const TEX_PATHS = ['../textures/earthmap.jpg'];
+const TEX_PATHS = ['./textures/earthmap.jpg'];
 const LOADED_TEX = [];
 
 function getHeight(w) {
@@ -41,6 +41,10 @@ class UserImage {
             ctx.canvas.height = image.height;
             ctx.drawImage(image, 0, 0);
             resolve(new UserImage(ctx.getImageData(0, 0, image.width, image.height)));
+         };
+
+         image.onerror = () => {
+            resolve(new UserImage(ctx.getImageData(0, 0, 1, 1)));
          };
 
          image.src = path;

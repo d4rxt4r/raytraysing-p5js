@@ -4,16 +4,14 @@ import Interval from '../classes/Interval.js';
 
 const color = vec3;
 
-const FULL_RES = 1200;
 const LOW_RES = 128;
-const ASPECT_RATIO = 16 / 9;
+const ASPECT_RATIO = 1;
 
 const TEX_PATHS = ['./textures/earthmap.jpg'];
 const LOADED_TEX = [];
 
 function getHeight(w) {
-   const height = int(w / ASPECT_RATIO);
-   return height > window.innerHeight ? window.innerHeight : height;
+   return int(w / ASPECT_RATIO);
 }
 
 class UserImage {
@@ -100,7 +98,6 @@ function setImagePixel(imgPixels, x, y, w, color) {
 
 export {
    LOADED_TEX,
-   FULL_RES,
    LOW_RES,
    UserImage,
    getHeight,

@@ -1,4 +1,5 @@
-import { setImagePixel, FULL_RES, getHeight } from '../utils/image.js';
+import { int } from '../utils/math.js';
+import { setImagePixel, getHeight } from '../utils/image.js';
 import { calculateZoom } from '../utils/canvas.js';
 
 export default class Renderer {
@@ -15,29 +16,25 @@ export default class Renderer {
    #canvas;
    #ctx;
    #imageData;
+   // _t0;
 
    constructor(canvas) {
       if (!canvas) {
          throw new Error('Canvas not provided!');
       }
 
-      this.#imageWidth = canvas.width;
-      this.#imageHeight = canvas.height;
-
       this.#threads = navigator.hardwareConcurrency || 4;
-
-      const chunks = this.#threads * 4;
-      this.#chunkCols = Math.floor(Math.sqrt(chunks));
-      this.#chunkRows = Math.ceil(chunks / this.#chunkCols);
+      this.#chunkCols = Math.floor(Math.sqrt(this.#threads * 4));
+      this.#chunkRows = Math.floor((this.#threads * 4) / this.#chunkCols);
       this.#chunks = this.#chunkCols * this.#chunkRows;
+      this.#chunkWidth = Math.ceil(canvas.width / this.#chunkCols);
+      this.#chunkHeight = Math.ceil(canvas.height / this.#chunkRows);
+      this.#imageWidth = this.#chunkWidth * this.#chunkCols;
+      this.#imageHeight = this.#chunkHeight * this.#chunkRows;
 
-      this.#chunkWidth = Math.floor(canvas.width / this.#chunkCols);
-      this.#chunkHeight = Math.floor(canvas.height / this.#chunkRows);
+      this.#canvas = canvas;
+      this.#ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-      // this._t0;
-      // this._scene;
-
-      this.#initContext(canvas);
       this.#initRenderWorkers();
       this.#initImageData();
    }
@@ -47,31 +44,20 @@ export default class Renderer {
    }
 
    resizeCanvas(w, h) {
-      this.setCameraSettings({ imageWidth: w, imageHeight: h });
-      this.#canvas.width = w;
-      this.#canvas.height = h;
-      this.#canvas.style.zoom = calculateZoom(w);
+      this.#chunkWidth = Math.ceil(w / this.#chunkCols);
+      this.#chunkHeight = Math.ceil(h / this.#chunkRows);
+      this.#imageWidth = this.#chunkWidth * this.#chunkCols;
+      this.#imageHeight = this.#chunkHeight * this.#chunkRows;
+      this.#canvas.width = this.#imageWidth;
+      this.#canvas.height = this.#imageHeight;
+      this.#canvas.style.zoom = calculateZoom(this.#imageWidth);
 
-      this.#imageWidth = w;
-      this.#imageHeight = h;
-
-      this.#chunkWidth = Math.floor(this.#canvas.width / this.#chunkCols);
-      this.#chunkHeight = Math.floor(this.#canvas.height / this.#chunkRows);
-
+      this.setCameraSettings({ imageWidth: this.#imageWidth, imageHeight: this.#imageHeight });
       this.#initImageData();
    }
 
    setResolution(scale) {
-      this.resizeCanvas(FULL_RES * scale, getHeight(FULL_RES) * scale);
-   }
-
-   setCameraSettings(settings) {
-      this.#workers.forEach((worker) => {
-         worker.postMessage({
-            action: 'settings',
-            settings
-         });
-      });
+      this.resizeCanvas(int(window.innerHeight * scale), getHeight(window.innerHeight * scale));
    }
 
    setScene(scene) {
@@ -107,6 +93,15 @@ export default class Renderer {
       this.render();
    }
 
+   setCameraSettings(settings) {
+      this.#workers.forEach((worker) => {
+         worker.postMessage({
+            action: 'settings',
+            settings
+         });
+      });
+   }
+
    restoreCameraSettings() {
       this.#workers.forEach((worker) => {
          worker.postMessage({
@@ -134,11 +129,6 @@ export default class Renderer {
       };
    }
 
-   #initContext(canvas) {
-      this.#canvas = canvas;
-      this.#ctx = canvas.getContext('2d', { willReadFrequently: true });
-   }
-
    #initRenderWorkers() {
       for (let i = 0; i < this.#threads; i++) {
          const worker = new Worker('render.worker.js', { type: 'module' });
@@ -153,15 +143,10 @@ export default class Renderer {
 
    #onMessageHandler(worker, msg) {
       const { x, y, startX, startY, endX, endY, color } = msg.data;
-
       setImagePixel(this.pixels, x, y, this.#canvas.width, color);
       this.#ctx.putImageData(this.#imageData, 0, 0);
-      
-      if (y === endY && x === endX) {
-         if (this.#currentChunk === this.#chunks) {
-            return;
-         }
 
+      if (y === endY && x === endX) {
          return this.#renderChunk(worker);
       }
 

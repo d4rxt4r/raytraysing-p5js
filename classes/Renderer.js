@@ -124,7 +124,7 @@ export default class Renderer {
       };
    }
 
-   #getChunkInterval(chunkIndex) {
+   #getChunk(chunkIndex) {
       const { x, y } = this.#getChunkCoords(chunkIndex);
       return {
          startX: x * this.#chunkWidth,
@@ -142,37 +142,7 @@ export default class Renderer {
    #initRenderWorkers() {
       for (let i = 0; i < this.#threads; i++) {
          const worker = new Worker('render.worker.js', { type: 'module' });
-         worker.onmessage = (e) => {
-            const { x, y, startX, startY, endX, endY, color } = e.data;
-
-            setImagePixel(this.pixels, x, y, this.#canvas.width, color);
-            this.#ctx.putImageData(this.#imageData, 0, 0);
-
-            // if (x === this._imageWidth && y === this._imageHeight) {
-            //    console.info('ℹ️ Generation took: ' + (performance.now() - this._t0).toFixed(2) + 'ms');
-            // }
-
-            if (y === endY && x === endX) {
-               if (this.#currentChunk === this.#chunks) {
-                  return;
-               }
-
-               return this.#renderChunk(worker);
-            }
-
-            worker.postMessage({
-               action: 'render',
-               data: {
-                  x: x === endX ? startX : x + 1,
-                  y: x === endX ? y + 1 : y,
-                  startX,
-                  startY,
-                  endX,
-                  endY
-               }
-            });
-         };
-
+         worker.onmessage = this.#onMessageHandler.bind(this, worker);
          this.#workers.push(worker);
       }
    }
@@ -181,13 +151,44 @@ export default class Renderer {
       this.#imageData = this.#ctx.createImageData(this.#canvas.width, this.#canvas.height);
    }
 
+   #onMessageHandler(worker, msg) {
+      const { x, y, startX, startY, endX, endY, color } = msg.data;
+
+      setImagePixel(this.pixels, x, y, this.#canvas.width, color);
+      this.#ctx.putImageData(this.#imageData, 0, 0);
+      
+      if (y === endY && x === endX) {
+         if (this.#currentChunk === this.#chunks) {
+            return;
+         }
+
+         return this.#renderChunk(worker);
+      }
+
+      worker.postMessage({
+         action: 'render',
+         data: {
+            x: x === endX ? startX : x + 1,
+            y: x === endX ? y + 1 : y,
+            startX,
+            startY,
+            endX,
+            endY
+         }
+      });
+   }
+
    #renderChunk(worker) {
+      if (this.#currentChunk === this.#chunks) {
+         return;
+      }
+
       const {
          startX = 0,
          startY = 0,
          endX = this.#imageWidth,
          endY = this.#imageHeight
-      } = this.#getChunkInterval(this.#currentChunk);
+      } = this.#getChunk(this.#currentChunk);
 
       worker.postMessage({
          action: 'render',
@@ -206,6 +207,11 @@ export default class Renderer {
 
    render() {
       // this._t0 = performance.now();
+      // if (x === this._imageWidth && y === this._imageHeight) {
+      //    console.info('ℹ️ Generation took: ' + (performance.now() - this._t0).toFixed(2) + 'ms');
+      // }
+
+      this.resizeCanvas(this.#imageWidth, this.#imageHeight);
       this.#currentChunk = 0;
 
       for (let i = 0; i < this.#threads; i++) {

@@ -13,9 +13,11 @@ FIXME
 
 -  [ ] Apply GUI settings then changing scenes
 -  [ ] Workers commands await state
+-  [ ] Render speed optimizations
 
 TODO
 
+-  [ ] Obj loading
 -  [ ] Track performance
 -  [ ] Additional 2D Primitives
 -  [ ] Rewrite classes in es6 style

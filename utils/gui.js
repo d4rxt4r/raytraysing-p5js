@@ -2,7 +2,7 @@ import { SCENE_NAMES, SCENE_LIST } from '../scenes.js';
 
 const defaultSettings = {
    scene: SCENE_NAMES[0],
-   renderRes: 0.1,
+   renderRes: 0.2,
    spp: 20,
    maxDepth: 15,
    vFov: 30,

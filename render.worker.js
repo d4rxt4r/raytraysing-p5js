@@ -5,7 +5,6 @@ import RCamera from './classes/Camera.js';
 
 let currentScene;
 let Scene;
-let pixelColor;
 let Camera = {};
 
 let originalSpp;
@@ -31,8 +30,7 @@ onmessage = (e) => {
    const { action, scene, data, settings, textures } = e.data;
 
    if (action === 'render') {
-      pixelColor = Camera.render(Scene, data.x, data.y);
-      return postMessage({ ...data, color: pixelColor });
+      return postMessage({ ...data, color: Camera.render(Scene, data.x, data.y) });
    }
 
    if (action === 'setTextures') {

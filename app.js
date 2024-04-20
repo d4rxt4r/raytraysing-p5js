@@ -6,4 +6,3 @@ const textures = await preloadTextures();
 const Renderer = createCanvas();
 Renderer.setTextures(textures);
 const GUI = createUserInterface(Renderer);
-GUI.closed = true;

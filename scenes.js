@@ -269,10 +269,10 @@ const CornellBoxCamera = {
 function FinaleScene() {
    const ground = new Diffuse(color(0.48, 0.83, 0.53));
    const boxes1 = new HittableList();
-   const boxes_per_side = 20;
+   const boxes_per_side = 5;
    for (let i = 0; i < boxes_per_side; i++) {
       for (let j = 0; j < boxes_per_side; j++) {
-         const w = 100.0;
+         const w = 400.0;
          const x0 = -1000.0 + i * w;
          const z0 = -1000.0 + j * w;
          const y0 = 0.0;
@@ -300,7 +300,8 @@ function FinaleScene() {
 
    let boundary = new Sphere(point3(360, 150, 145), 70, new Dielectric(1.5));
    scene.add(boundary);
-   scene.add(new ConstantMedium(boundary, 0.2, color(0.2, 0.4, 0.9)));
+   scene.add(new ConstantMedium(boundary, 0.03, color(0.2, 0.4, 0.9)));
+
    boundary = new Sphere(point3(0, 0, 0), 5000, new Dielectric(1.5));
    scene.add(new ConstantMedium(boundary, 0.0001, color(1, 1, 1)));
 
@@ -313,9 +314,8 @@ function FinaleScene() {
    const white = new Diffuse(color(0.73, 0.73, 0.73));
    const ns = 1000;
    for (let j = 0; j < ns; j++) {
-      boxes2.add(new Sphere(Math.random(0, 165), 10, white));
+      boxes2.add(new Sphere(Vector.random(0, 165), 10, white));
    }
-
    scene.add(new Translate(new RotateY(boxes2, 15), vec3(-100, 270, 395)));
 
    return new HittableList(new BHVNode(scene.objects, 0, scene.objects.length));
@@ -341,7 +341,7 @@ const SCENE_NAMES = [
    'Perlin Noise',
    'Cornell Box',
    'Cornell Smoke',
-   'Finale Demo Scene'
+   'Final Demo'
 ];
 const SCENE_LIST = {
    'Test Scene': {
@@ -376,7 +376,7 @@ const SCENE_LIST = {
       scene: CornellSmokeScene,
       camera: CornellSmokeSceneCamera
    },
-   'Finale Demo Scene': {
+   'Final Demo': {
       scene: FinaleScene,
       camera: FinaleSceneCamera
    }

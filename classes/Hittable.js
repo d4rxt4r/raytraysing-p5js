@@ -1,5 +1,5 @@
-import { Vector, vec3 } from '../utils/vector.js';
-import Ray from './Ray.js';
+import { randomInt } from '../utils/math.js';
+import { vec3 } from '../utils/vector.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
 
@@ -9,12 +9,20 @@ class Hittable {
     */
    $boundingBox = new AABB();
 
+   get boundingBox() {
+      return this.$boundingBox;
+   }
+
    hit(ray, rayInt, hitRec) {
       throw new Error('Not implemented');
    }
 
-   get boundingBox() {
-      return this.$boundingBox;
+   pdfValue(origin, direction) {
+      return 0;
+   }
+
+   random(origin) {
+      return vec3(1, 0, 0);
    }
 }
 
@@ -37,6 +45,17 @@ class HittableList extends Hittable {
 
    clear() {
       this.objects = [];
+   }
+
+   pdfValue(origin, direction) {
+      const weight = 1 / this.objects.length;
+      const sum = this.objects.reduce((acc, cur) => acc + weight * cur.pdfValue(origin, direction), 0);
+
+      return sum;
+   }
+
+   random(origin) {
+      return this.objects[randomInt(0, this.objects.length - 1)].random(origin);
    }
 
    hit(ray, rayInt, hitRec) {

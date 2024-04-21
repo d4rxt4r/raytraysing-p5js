@@ -1,13 +1,15 @@
 import { int, deg2rad } from '../utils/math.js';
 import { Vector, vec3 } from '../utils/vector.js';
 import { color } from '../utils/image.js';
+import { HittablePDF, MixturePDF } from './PDF.js';
+import ScatterRecord from './ScatterRecord.js';
 import HitRecord from './HitRecord.js';
 import Interval from './Interval.js';
 import Ray from './Ray.js';
 
 const { add, sub, mul, cross, scale } = Vector;
 
-const DT = new Interval(0.001, Infinity);
+const DiT = new Interval(0.001, Infinity);
 
 export default class Camera {
    imageWidth;
@@ -95,29 +97,49 @@ export default class Camera {
       return new Ray(rayOrigin, sub(pixelSample, rayOrigin), Math.random());
    }
 
-   #getRayColor(scene, ray, depth) {
+   /**
+    * @param {Ray} ray
+    * @param {number} depth
+    * @param {HittableList} scene
+    * @param {HittableList} lights
+    */
+   #getRayColor(ray, depth, scene, lights) {
       if (depth <= 0) {
          return color(0, 0, 0);
       }
 
-      const hitRec = new HitRecord();
-
-      if (!scene.hit(ray, DT, hitRec)) {
+      const hRec = new HitRecord();
+      if (!scene.hit(ray, DiT, hRec)) {
          return this.background;
       }
 
-      const { scatter, attenuation, scattered } = hitRec.mat.scatter(ray, hitRec);
-      const colorFromEmission = hitRec.mat.emitted(hitRec, hitRec.u, hitRec.v, hitRec.p);
-
-      if (!scatter) {
+      const sRec = new ScatterRecord();
+      const colorFromEmission = hRec.mat.emitted(ray, hRec, hRec.u, hRec.v, hRec.p);
+      if (!hRec.mat.scatter(ray, hRec, sRec)) {
          return colorFromEmission;
       }
 
-      const colorFromScatter = mul(attenuation, this.#getRayColor(scene, scattered, depth - 1));
+      if (sRec.skipPDF) {
+         return mul(sRec.attenuation, this.#getRayColor(sRec.skipPDFRay, depth - 1, scene, lights));
+      }
+
+      const light = new HittablePDF(lights, hRec.p);
+      const p = new MixturePDF(light, sRec.pdf);
+
+      const scattered = new Ray(hRec.p, p.generate(), ray.time);
+      const pdfVal = p.value(scattered.direction);
+
+      const scatteringPDF = hRec.mat.scatteringPDF(ray, hRec, scattered);
+
+      const sampleColor = this.#getRayColor(scattered, depth - 1, scene, lights);
+      const colorFromScatter = scale(sRec.attenuation, scatteringPDF)
+         .mul(sampleColor)
+         .scale(1 / pdfVal);
+
       return colorFromEmission.add(colorFromScatter);
    }
 
-   render(scene, x, y) {
+   render(x, y, scene, lights) {
       if (!this.#pixel00Loc) {
          this.init();
       }
@@ -125,7 +147,7 @@ export default class Camera {
       const pixelColor = color(0, 0, 0);
       for (let sj = 0; sj < this.#sqrtSpp; sj++) {
          for (let si = 0; si < this.#sqrtSpp; si++) {
-            pixelColor.add(this.#getRayColor(scene, this.#getRay(x, y, si, sj), this.maxDepth));
+            pixelColor.add(this.#getRayColor(this.#getRay(x, y, si, sj), this.maxDepth, scene, lights));
          }
       }
 

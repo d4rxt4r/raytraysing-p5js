@@ -1,6 +1,8 @@
 import { Vector } from '../utils/vector.js';
 import { color } from '../utils/image.js';
 import { Texture, SolidColor } from './Texture.js';
+import { CosinePDF, SpherePDF } from './PDF.js';
+import ScatterRecord from './ScatterRecord.js';
 import HitRecord from './HitRecord.js';
 import Ray from './Ray.js';
 
@@ -8,23 +10,27 @@ const { normalize, scale, dot, reflect, refract, nearZero } = Vector;
 
 class Material {
    /**
-    * @param {Ray} ray
-    * @param {HitRecord} hitRec
+    * @param {Ray} rayIn
+    * @param {HitRecord} hRec
+    * @param {ScatterRecord} sRec
     */
-   scatter(ray, hitRec) {
-      return {
-         scatter: false
-      };
+   scatter(rayIn, hRec, sRec) {
+      return false;
    }
 
    /**
-    * @param {HitRecord} hitRec
+    * @param {Ray} rayIn
+    * @param {HitRecord} rec
     * @param {Vector} u
     * @param {Vector} v
     * @param {Vector} p
     */
-   emitted(hitRec, u, v, p) {
+   emitted(rayIn, rec, u, v, p) {
       return color(0, 0, 0);
+   }
+
+   scatteringPDF(rayIn, hRec, scattered) {
+      return 0;
    }
 }
 
@@ -47,19 +53,20 @@ class Lambertian extends Material {
 
    /**
     * @param {Ray} rayIn
-    * @param {HitRecord} hitRec
+    * @param {HitRecord} hRec
+    * @param {ScatterRecord} sRec
     */
-   scatter(rayIn, hitRec) {
-      let scatterDirection = Vector.randomNorm().add(hitRec.normal);
-      if (nearZero(scatterDirection)) {
-         scatterDirection = hitRec.normal.copy();
-      }
+   scatter(rayIn, hRec, sRec) {
+      sRec.attenuation = this.#texture.value(hRec.u, hRec.v, hRec.p);
+      sRec.pdf = new CosinePDF(hRec.normal);
+      sRec.skipPDF = false;
 
-      return {
-         scatter: true,
-         scattered: new Ray(hitRec.p, scatterDirection, rayIn.time),
-         attenuation: this.#texture.value(hitRec.u, hitRec.v, hitRec.p)
-      };
+      return true;
+   }
+
+   scatteringPDF(rayIn, hRec, scattered) {
+      const cosine = dot(hRec.normal, normalize(scattered.direction));
+      return Math.max(0, cosine / Math.PI);
    }
 }
 
@@ -81,20 +88,19 @@ class Metal extends Material {
 
    /**
     * @param {Ray} ray
-    * @param {HitRecord} hitRec
+    * @param {HitRecord} hRec
+    * @param {ScatterRecord} sRec
     */
-   scatter(rayIn, hitRec) {
-      let reflected = reflect(rayIn.direction, hitRec.normal);
-      if (this.#fuzz) {
-         reflected.normalize().add(Vector.randomNorm().scale(this.#fuzz));
-      }
-      const scattered = new Ray(hitRec.p, reflected, rayIn.time);
+   scatter(rayIn, hRec, sRec) {
+      let reflected = reflect(rayIn.direction, hRec.normal);
+      reflected.normalize().add(scale(Vector.randomNorm(), this.#fuzz));
 
-      return {
-         scatter: dot(scattered.direction, hitRec.normal) > 0,
-         scattered,
-         attenuation: this.#albedo
-      };
+      sRec.attenuation = this.#albedo;
+      sRec.pdf = null;
+      sRec.skipPDF = true;
+      sRec.skipPDFRay = new Ray(hRec.p, reflected, rayIn.time);
+
+      return true;
    }
 }
 
@@ -118,27 +124,31 @@ class Dielectric extends Material {
 
    /**
     * @param {Ray} ray
-    * @param {HitRecord} hitRec
+    * @param {HitRecord} hRec
+    * @param {ScatterRecord} sRec
     */
-   scatter(rayIn, hitRec) {
-      const ri = hitRec.frontFace ? 1 / this.#refIndex : this.#refIndex;
-      const unitDirection = normalize(rayIn.direction);
-      const cosTheta = Math.min(dot(scale(unitDirection, -1), hitRec.normal), 1);
-      const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
-      const cantRefract = ri * sinTheta > 1;
+   scatter(rayIn, hRec, sRec) {
+      sRec.attenuation = color(1, 1, 1);
+      sRec.pdf = null;
+      sRec.skipPDF = true;
+      const ri = hRec.frontFace ? 1 / this.#refIndex : this.#refIndex;
 
+      const unitDirection = normalize(rayIn.direction);
+      const cosTheta = Math.min(dot(scale(unitDirection, -1), hRec.normal), 1);
+      const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
+
+      const cantRefract = ri * sinTheta > 1;
       let direction;
+
       if (cantRefract || this.#reflectance(cosTheta, ri) > Math.random()) {
-         direction = reflect(unitDirection, hitRec.normal);
+         direction = reflect(unitDirection, hRec.normal);
       } else {
-         direction = refract(unitDirection, hitRec.normal, ri);
+         direction = refract(unitDirection, hRec.normal, ri);
       }
 
-      return {
-         scatter: true,
-         scattered: new Ray(hitRec.p, direction, rayIn.time),
-         attenuation: color(1, 1, 1)
-      };
+      sRec.skipPDFRay = new Ray(hRec.p, direction, rayIn.time);
+
+      return true;
    }
 }
 
@@ -159,12 +169,13 @@ class DiffusedLight extends Material {
    }
 
    /**
+    * @param {Ray} rayIn
     * @param {HitRecord} hitRec
     * @param {Vector} u
     * @param {Vector} v
     * @param {Vector} p
     */
-   emitted(hitRec, u, v, p) {
+   emitted(rayIn, hitRec, u, v, p) {
       if (!hitRec.frontFace) {
          return color(0, 0, 0);
       }
@@ -189,13 +200,17 @@ class Isotropic extends Material {
       }
    }
 
-   scatter(rayIn, hitRec) {
-      return {
-         scatter: true,
-         scattered: new Ray(hitRec.p, Vector.randomNorm(), rayIn.time),
-         attenuation: this.#texture.value(hitRec.u, hitRec.v, hitRec.p)
-      };
+   scatter(rayIn, hRec, sRec) {
+      sRec.attenuation = this.#texture.value(hRec.u, hRec.v, hRec.p);
+      sRec.pdf = new SpherePDF();
+      sRec.skipPDF = false;
+
+      return true;
+   }
+
+   scatteringPDF() {
+      return 1 / (4 * Math.PI);
    }
 }
 
-export { Lambertian as Diffuse, Metal, Dielectric, DiffusedLight, Isotropic };
+export { Material, Lambertian as Diffuse, Metal, Dielectric, DiffusedLight, Isotropic };

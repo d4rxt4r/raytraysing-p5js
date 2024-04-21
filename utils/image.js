@@ -86,9 +86,9 @@ function setImagePixel(imgPixels, x, y, w, color) {
    const index = getPixelIndex(x, y, w);
    const intensity = new Interval(0, 0.999);
 
-   const r = linearToGamma(color.x);
-   const g = linearToGamma(color.y);
-   const b = linearToGamma(color.z);
+   const r = linearToGamma(color.x ?? 0);
+   const g = linearToGamma(color.y ?? 0);
+   const b = linearToGamma(color.z ?? 0);
 
    imgPixels[index] = 255 * intensity.clamp(r);
    imgPixels[index + 1] = 255 * intensity.clamp(g);

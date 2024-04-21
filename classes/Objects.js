@@ -5,14 +5,17 @@ import { Hittable, HittableList } from './Hittable.js';
 import HitRecord from './HitRecord.js';
 import Interval from './Interval.js';
 import AABB from './AABB.js';
+import Ray from './Ray.js';
+import ONB from './ONB.js';
 
 const { add, sub, scale, dot, cross, normalize } = Vector;
+
+const DiT = new Interval(0.001, Infinity);
 
 class Sphere extends Hittable {
    #center;
    #radius;
    #mat;
-   #centerOffset;
    #isMoving;
    #centerVec;
 
@@ -27,7 +30,6 @@ class Sphere extends Hittable {
 
       if (centerOffset instanceof Vector) {
          this.#isMoving = true;
-         this.#centerOffset = centerOffset;
          this.#centerVec = sub(centerOffset, center);
          this.$boundingBox = new AABB(
             new AABB(sub(center, rVec), add(center, rVec)),
@@ -50,6 +52,27 @@ class Sphere extends Hittable {
 
    #sphereCenter(time) {
       return scale(this.#centerVec, time).add(this.#center);
+   }
+
+   pdfValue(origin, direction) {
+      // This method only works for stationary spheres.
+      const hRec = new HitRecord();
+      if (!this.hit(new Ray(origin, direction), DiT, hRec)) {
+         return 0;
+      }
+
+      const cosThetaMax = Math.sqrt(1 - (this.#radius * this.#radius) / sub(this.#center, origin).magSq());
+      const solidAngle = 2 * Math.PI * (1 - cosThetaMax);
+      return 1 / solidAngle;
+   }
+
+   random(origin) {
+      const direction = sub(this.#center, origin);
+      const distSq = direction.magSq();
+      const uvw = new ONB();
+      uvw.buildFrom(direction);
+
+      return uvw.local(Sphere.randomToSphere(this.#radius, distSq));
    }
 
    hit(ray, rayInt, hitRec) {
@@ -85,16 +108,50 @@ class Sphere extends Hittable {
 
       return true;
    }
+
+   static randomToSphere(radius, distSq) {
+      const r1 = Math.random();
+      const r2 = Math.random();
+      const z = 1 + r2 * (Math.sqrt(1 - (radius * radius) / distSq) - 1);
+
+      const phi = 2 * Math.PI * r1;
+      const x = Math.cos(phi) * Math.sqrt(1 - z * z);
+      const y = Math.sin(phi) * Math.sqrt(1 - z * z);
+
+      return vec3(x, y, z);
+   }
 }
 
 class Quad extends Hittable {
+   /**
+    * @type {Vector}
+    */
    #Q;
+   /**
+    * @type {Vector}
+    */
    #u;
+   /**
+    * @type {Vector}
+    */
    #v;
-   #mat;
-   #normal;
-   #D;
+   /**
+    * @type {Vector}
+    */
    #w;
+   /**
+    * @type {Vector}
+    */
+   #normal;
+   /**
+    * @type {number}
+    */
+   #D;
+   /**
+    * @type {number}
+    */
+   #area;
+   #mat;
 
    constructor(Q, u, v, mat) {
       super();
@@ -108,6 +165,7 @@ class Quad extends Hittable {
       this.#normal = normalize(n);
       this.#D = dot(this.#normal, Q);
       this.#w = scale(n, 1 / dot(n, n));
+      this.#area = n.mag();
 
       this.#setBoundingBox();
    }
@@ -116,6 +174,23 @@ class Quad extends Hittable {
       const bBoxDiagonal1 = new AABB(this.#Q, add(this.#Q, this.#u).add(this.#v));
       const bBoxDiagonal2 = new AABB(add(this.#Q, this.#u), add(this.#Q, this.#v));
       this.$boundingBox = new AABB(bBoxDiagonal1, bBoxDiagonal2);
+   }
+
+   pdfValue(origin, direction) {
+      const hRec = new HitRecord();
+      if (!this.hit(new Ray(origin, direction), DiT, hRec)) {
+         return 0;
+      }
+
+      const distSq = hRec.t * hRec.t * direction.magSq();
+      const cosine = Math.abs(dot(direction, hRec.normal) / direction.mag());
+
+      return distSq / (cosine * this.#area);
+   }
+
+   random(origin) {
+      const p = this.#Q.copy().add(scale(this.#u, Math.random())).add(scale(this.#v, Math.random()));
+      return p.sub(origin);
    }
 
    isInterior(a, b, hitRec) {

@@ -20,5 +20,4 @@ TODO
 -  [ ] Obj loading
 -  [ ] Track performance
 -  [ ] Additional 2D Primitives
--  [ ] Rewrite classes in es6 style
 -  [ ] Scene editor

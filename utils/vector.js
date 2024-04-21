@@ -3,6 +3,25 @@ import { randomDouble } from './math.js';
 const EPS = 1e-8;
 
 class Vector {
+   /**
+    * @type {number}
+    */
+   x;
+   /**
+    * @type {number}
+    */
+   y;
+   /**
+    * @type {number}
+    */
+   z;
+
+   /**
+    * @param {number} x
+    * @param {number} y
+    * @param {number} z
+    * @return {Vector}
+    */
    constructor(x, y, z) {
       this.x = x;
       this.y = y;
@@ -216,6 +235,14 @@ class Vector {
       }
    }
 
+   static randomOnHemisphere(normal) {
+      const onUnitSphere = Vector.randomNorm();
+      if (Vector.dot(onUnitSphere, normal) > 0.0) {
+         return onUnitSphere;
+      }
+      return onUnitSphere.scale(-1);
+   }
+
    /**
     * Generates a random vector within a normalized disk.
     *
@@ -239,4 +266,14 @@ function vec3(x, y, z) {
 
 const point3 = vec3;
 
-export { Vector, vec3, point3 };
+function randomCosineDirection() {
+   const r1 = Math.random();
+   const r2 = Math.random();
+   const phi = 2 * Math.PI * r1;
+   const x = Math.cos(phi) * Math.sqrt(r2);
+   const y = Math.sin(phi) * Math.sqrt(r2);
+   const z = Math.sqrt(1 - r2);
+   return vec3(x, y, z);
+}
+
+export { Vector, vec3, point3, randomCosineDirection };
